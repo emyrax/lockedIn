@@ -82,9 +82,19 @@ export default function AdminDashboard() {
             className="rounded-xl border bg-white p-4 shadow-sm"
           >
             <div className="mb-3 flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-green-700 text-lg font-bold text-white">
-                {cadet.firstName[0]}
-                {cadet.lastName[0]}
+              <div className="h-12 w-12 overflow-hidden rounded-full bg-green-700">
+                {cadet.photoURL ? (
+                  <img
+                    src={cadet.photoURL}
+                    alt=""
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center text-lg font-bold text-white">
+                    {cadet.firstName[0]}
+                    {cadet.lastName[0]}
+                  </div>
+                )}
               </div>
               <div>
                 <p className="font-semibold text-gray-800">

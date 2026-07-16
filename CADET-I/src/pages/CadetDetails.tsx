@@ -65,9 +65,19 @@ export default function CadetDetails() {
 
         <div className="overflow-hidden rounded-2xl bg-white shadow-lg">
           <div className="bg-green-800 px-6 py-8 text-center text-white">
-            <div className="mx-auto mb-3 flex h-20 w-20 items-center justify-center rounded-full bg-white/20 text-3xl font-bold">
-              {cadet.firstName[0]}
-              {cadet.lastName[0]}
+            <div className="mx-auto mb-3 h-20 w-20 overflow-hidden rounded-full bg-white/20">
+              {cadet.photoURL ? (
+                <img
+                  src={cadet.photoURL}
+                  alt=""
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center text-3xl font-bold text-white">
+                  {cadet.firstName[0]}
+                  {cadet.lastName[0]}
+                </div>
+              )}
             </div>
             <h2 className="text-2xl font-bold">
               {cadet.firstName} {cadet.lastName}

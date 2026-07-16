@@ -14,5 +14,6 @@ export interface Cadet {
   nextOfKin?: string;
   nokPhone?: string;
   batch: string;
+  photoURL?: string;
   createdAt?: string;
 }
