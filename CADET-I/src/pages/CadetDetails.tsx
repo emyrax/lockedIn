@@ -10,13 +10,18 @@ export default function CadetDetails() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!cadetId) return;
-    getDoc(doc(db, "cadets", cadetId)).then((snap) => {
-      if (snap.exists()) {
-        setCadet({ id: snap.id, ...snap.data() } as Cadet);
-      }
+    if (!cadetId) {
       setLoading(false);
-    });
+      return;
+    }
+    getDoc(doc(db, "cadets", cadetId))
+      .then((snap) => {
+        if (snap.exists()) {
+          setCadet({ id: snap.id, ...snap.data() } as Cadet);
+        }
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
   }, [cadetId]);
 
   if (loading) {
