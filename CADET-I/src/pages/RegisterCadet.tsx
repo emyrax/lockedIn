@@ -18,6 +18,10 @@ const defaultForm = {
   nextOfKin: "",
   nokPhone: "",
   batch: "",
+  platoon: "",
+  squad: "",
+  zone: "",
+  commandingOfficer: "",
 };
 
 const resizeToSquare = (file: File, size: number): Promise<Blob> =>
@@ -113,6 +117,7 @@ export default function RegisterCadet() {
         `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload`,
         { method: "POST", body: formData }
       );
+      if (!uploadRes.ok) throw new Error("Cloudinary upload failed");
       const { secure_url } = await uploadRes.json();
       await updateDoc(doc(db, "cadets", docRef.id), { photoURL: secure_url });
       navigate("/admin/dashboard");
@@ -320,6 +325,50 @@ export default function RegisterCadet() {
             onChange={update("batch")}
             className={inputClass}
             placeholder="e.g. 2024 Batch A"
+          />
+        </div>
+        <div>
+          <label className="mb-1 block text-sm font-medium text-gray-700">
+            Platoon
+          </label>
+          <input
+            value={form.platoon}
+            onChange={update("platoon")}
+            className={inputClass}
+            placeholder="e.g. Alpha Platoon"
+          />
+        </div>
+        <div>
+          <label className="mb-1 block text-sm font-medium text-gray-700">
+            Squad
+          </label>
+          <input
+            value={form.squad}
+            onChange={update("squad")}
+            className={inputClass}
+            placeholder="e.g. 1st Squad"
+          />
+        </div>
+        <div>
+          <label className="mb-1 block text-sm font-medium text-gray-700">
+            Zone
+          </label>
+          <input
+            value={form.zone}
+            onChange={update("zone")}
+            className={inputClass}
+            placeholder="e.g. North"
+          />
+        </div>
+        <div>
+          <label className="mb-1 block text-sm font-medium text-gray-700">
+            Commanding Officer
+          </label>
+          <input
+            value={form.commandingOfficer}
+            onChange={update("commandingOfficer")}
+            className={inputClass}
+            placeholder="e.g. Lt. Col. Smith"
           />
         </div>
         <div className="flex gap-3 sm:col-span-2">

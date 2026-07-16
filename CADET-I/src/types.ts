@@ -15,5 +15,9 @@ export interface Cadet {
   nokPhone?: string;
   batch: string;
   photoURL?: string;
+  platoon?: string;
+  squad?: string;
+  zone?: string;
+  commandingOfficer?: string;
   createdAt?: string;
 }

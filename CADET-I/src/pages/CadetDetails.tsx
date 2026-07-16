@@ -102,6 +102,10 @@ export default function CadetDetails() {
             <Field label="Next of Kin" value={cadet.nextOfKin} />
             <Field label="Next of Kin Phone" value={cadet.nokPhone} />
             <Field label="Batch" value={cadet.batch} />
+            <Field label="Platoon" value={cadet.platoon} />
+            <Field label="Squad" value={cadet.squad} />
+            <Field label="Zone" value={cadet.zone} />
+            <Field label="Commanding Officer" value={cadet.commandingOfficer} />
           </div>
         </div>
 
