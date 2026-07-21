@@ -26,7 +26,7 @@ const necMembers: NecMember[] = [
   { name: "Treasurer", role: "Finance & Budget", position: "AGC Finance", img: "/images/nec_6.jpg" },
   { name: "Internal Auditor", role: "Audit & Compliance", position: "AGC Audit", img: "/images/nec_7.jpg" },
   { name: "Legal Adviser", role: "Legal & Constitution", position: "AGC Legal", img: "/images/nec_8.jpg" },
-  { name: "Obitope william", role: "Zonal Coordinator", position: "Zone B Coordinator", img: "/nec_zone_b.jpg" },
+  { name: "Obitope william", role: "Zonal Coordinator", position: "Zone B Coordinator", img: "/images/nec_zone_b.jpg" },
   { name: "PRO II", role: "Deputy PRO", position: "AGC Media & Publicity", img: "/images/nec_10.jpg" },
   { name: "Ag. Treasurer", role: "Deputy Finance", position: "AGC Finance", img: "/images/nec_11.jpg" },
 ];
