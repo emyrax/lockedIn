@@ -95,7 +95,7 @@ export default function About() {
       {/* HERO */}
       <section className="about-hero">
         <div className="hero-content">
-          <p className="hero-org">NUSSKA COMMAND</p>
+          <p className="hero-org">ENUGU STATE COMMAND</p>
           <h1>COMMUNITY AMBASSADOR FOR DEVELOPMENTAL ENGAGEMENT TECHNIQUES INITIATIVE.</h1>
           <p className="hero-tag">"To build and secure the hope of youths in the society."</p>
         </div>

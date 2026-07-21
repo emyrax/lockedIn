@@ -101,16 +101,22 @@ export default function Contact() {
 
   const infoCards = [
     {
-      icon: "fa-envelope-open-text",
-      title: "Official Email",
-      value: "cadetinitiative1@gmail.com",
-      href: "mailto:cadetinitiative1@gmail.com",
+      icon: "fa-map-marker-alt",
+      title: "Command Address",
+      value: "University of Nigeria, Nsukka",
+      href: "https://maps.google.com/?q=University+of+Nigeria+Nsukka",
     },
     {
-      icon: "fa-whatsapp",
-      title: "WhatsApp Support",
-      value: "+234 701-1888-770",
-      href: "https://wa.me/2347011888770",
+      icon: "fa-phone-alt",
+      title: "Phone / WhatsApp",
+      value: "08124917899",
+      href: "https://wa.me/2348124917899",
+    },
+    {
+      icon: "fa-envelope-open-text",
+      title: "Official Email",
+      value: "cadetienugu@gmail.com",
+      href: "mailto:cadetienugu@gmail.com",
     },
   ];
 
@@ -118,7 +124,7 @@ export default function Contact() {
     <div className="main-wrapper">
       <section className="contact-hero">
         <div className="hero-content">
-          <p className="hero-org">NUSSKA COMMAND</p>
+          <p className="hero-org">ENUGU STATE COMMAND</p>
           <h1
             style={{
               color: "#fff",
@@ -177,7 +183,7 @@ export default function Contact() {
               <div className="form-container contact-form-card">
                 <h3>Send a Message</h3>
                 <p className="subtitle">
-                  Direct communication to National Command
+Direct communication to Enugu State Command
                 </p>
 
                 <form id="contactMsgForm" onSubmit={handleSubmit}>
