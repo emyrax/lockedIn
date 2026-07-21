@@ -68,7 +68,7 @@ export default function Home() {
       <div className="overlay">
         <div className="hero-container">
           <div className="hero-content animate-up">
-            <p className="hero-org-subtitle">National Headquarters</p>
+            <p className="hero-org-subtitle">NUSSKA COMMAND</p>
             <h1 className="main-title">
               COMMUNITY AMBASSADOR FOR DEVELOPMENTAL AND ENGAGEMENT TECHNIQUES INITIATIVES.
             </h1>

@@ -118,7 +118,7 @@ export default function Contact() {
     <div className="main-wrapper">
       <section className="contact-hero">
         <div className="hero-content">
-          <p className="hero-org">National Headquarters</p>
+          <p className="hero-org">NUSSKA COMMAND</p>
           <h1
             style={{
               color: "#fff",
