@@ -59,7 +59,7 @@ export default function Contact() {
         }),
         addDoc(collection(db, "contact_messages"), {
           ...payload,
-          to: "cadetinitiative1@gmail.com",
+          to: "cadetienugu@gmail.com",
           status: "submitted",
           createdAt: serverTimestamp(),
         }),

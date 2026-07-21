@@ -54,7 +54,7 @@ export default function MemberValidation() {
   const [passportData, setPassportData] = useState<string | null>(null);
   const [passportPreview, setPassportPreview] = useState<string | null>(null);
   const [tcOpen, setTcOpen] = useState(false);
-  const [timer, setTimer] = useState(15);
+  const [timer, setTimer] = useState(10);
   const [timerActive, setTimerActive] = useState(false);
   const [agreed, setAgreed] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -164,7 +164,7 @@ export default function MemberValidation() {
 
   const resetTc = () => {
     setTcOpen(false);
-    setTimer(15);
+    setTimer(10);
     setTimerActive(false);
     setAgreed(false);
   };
@@ -309,7 +309,7 @@ export default function MemberValidation() {
                     <pre style={{ fontFamily: "Poppins, sans-serif", whiteSpace: "pre-wrap", margin: 0 }}>{TERMS_TEXT}</pre>
                   </div>
                   <div className="timer-bar-wrap">
-                    <div className="timer-bar" style={{ width: `${((15 - timer) / 15) * 100}%` }} />
+                    <div className="timer-bar" style={{ width: `${((10 - timer) / 10) * 100}%` }} />
                   </div>
                   <p className="timer-label">{timer > 0 ? `Please wait ${timer}s to agree...` : "You may now agree to the terms."}</p>
                   <div className="agree-row-checkbox">

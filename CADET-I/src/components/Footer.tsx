@@ -14,8 +14,9 @@ export default function Footer() {
             </div>
             <p className="footer-motto">"To build and secure the hope of youths in the society."</p>
             <div className="contact-details">
-              <p><i className="fas fa-envelope"></i> cadetinitiative1@gmail.com</p>
-              <p><i className="fas fa-phone"></i> +234 701-1888-770</p>
+              <p><i className="fas fa-map-marker-alt"></i> University of Nigeria, Nsukka</p>
+              <p><i className="fas fa-phone"></i> 08124917899</p>
+              <p><i className="fas fa-envelope"></i> cadetienugu@gmail.com</p>
             </div>
           </div>
 
@@ -46,7 +47,7 @@ export default function Footer() {
         </div>
       </div>
 
-      <a href="https://wa.me/message/AZ2WMBRJHD2QJ1" className="whatsapp-float" target="_blank" rel="noopener">
+      <a href="https://wa.me/2348124917899" className="whatsapp-float" target="_blank" rel="noopener">
         <i className="fab fa-whatsapp"></i>
         <span>Official Support</span>
       </a>
