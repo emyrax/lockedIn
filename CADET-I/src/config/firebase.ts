@@ -14,17 +14,26 @@ const firebaseConfig = {
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
 };
 
-const app = initializeApp(firebaseConfig);
+let app: ReturnType<typeof initializeApp> | null = null;
 let analytics: ReturnType<typeof getAnalytics> | null = null;
-try { analytics = getAnalytics(app); } catch { analytics = null; }
-export { analytics };
-export const auth = getAuth(app);
-export const db = getFirestore(app);
-export const storage = getStorage(app);
+let auth: ReturnType<typeof getAuth> | null = null;
+let db: ReturnType<typeof getFirestore> | null = null;
+let storage: ReturnType<typeof getStorage> | null = null;
 
-setPersistence(auth, browserSessionPersistence).catch(e =>
-  console.error("Session persistence setup failed:", e)
-);
+try {
+  app = initializeApp(firebaseConfig);
+  analytics = getAnalytics(app);
+  auth = getAuth(app);
+  db = getFirestore(app);
+  storage = getStorage(app);
+  setPersistence(auth, browserSessionPersistence).catch(e =>
+    console.error("Session persistence setup failed:", e)
+  );
+} catch (e) {
+  console.error("Firebase initialization failed — check VITE_* env vars:", e);
+}
+
+export { analytics, auth, db, storage };
 
 export const GOOGLE_SHEETS_API =
   "https://script.google.com/macros/s/AKfycbwiFWaoQwjsvjzm_aIJT-BLgbgvZRLBRbMfRptRHYNeJHW3-PJV_9QaCPWjqeAYGMxg-Q/exec";

@@ -1,15 +1,15 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
-  collection, query, orderBy, getDocs, addDoc,
-  updateDoc, deleteDoc, doc, Timestamp
+  collection, query, orderBy, getDocs, getDoc, setDoc, addDoc,
+  updateDoc, deleteDoc, doc, Timestamp, where
 } from "firebase/firestore";
-import { auth, db, GOOGLE_SHEETS_API } from "../config/firebase";
+import { db } from "../config/firebase";
 import { useAuth } from "../contexts/AuthContext";
 import {
-  escapeHtml, formatDate, truncate, getGoogleDriveUrl,
-  RANKS, DEPARTMENTS, APPOINTMENTS
+  escapeHtml, formatDate, truncate, getGoogleDriveUrl
 } from "../utils";
+import { QRCodeSVG } from "qrcode.react";
 
 function statusBadgeClass(status: string) {
   const s = String(status).toLowerCase();
@@ -19,8 +19,10 @@ function statusBadgeClass(status: string) {
   return "badge-green";
 }
 
+const ADMIN_ROLES = ["super-admin", "manager", "media-admin"];
+
 export default function Admin() {
-  const { user, profile, loading: authLoading, isAdmin, logout } = useAuth();
+  const { user, profile, loading: authLoading, profileLoading, isAdmin, login, loginWithGoogle, logout } = useAuth();
   const navigate = useNavigate();
 
   const [activeTab, setActiveTab] = useState("officers");
@@ -37,16 +39,36 @@ export default function Admin() {
   const [userMap, setUserMap] = useState<Record<string, string>>({});
   const [courseMap, setCourseMap] = useState<Record<string, { title: string; badgeUrl?: string }>>({});
 
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+  const [showPass, setShowPass] = useState(false);
+  const [loginError, setLoginError] = useState("");
+  const [loginLoading, setLoginLoading] = useState(false);
+
+  const [admins, setAdmins] = useState<any[]>([]);
+  const [showAddAdmin, setShowAddAdmin] = useState(false);
+  const [addAdminSearch, setAddAdminSearch] = useState("");
+  const [adminSearchResults, setAdminSearchResults] = useState<any[]>([]);
+  const [selectedAdminUser, setSelectedAdminUser] = useState<any | null>(null);
+  const [addAdminRole, setAddAdminRole] = useState("manager");
+  const [addAdminLoading, setAddAdminLoading] = useState(false);
+  const [addAdminError, setAddAdminError] = useState("");
+
+  const [qrOfficer, setQrOfficer] = useState<any | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
   useEffect(() => {
     document.title = "Admin Panel — CADETI";
   }, []);
 
   useEffect(() => {
+    if (!user || !isAdmin) return;
     if (activeTab === "officers") fetchOfficers();
     else if (activeTab === "enrollments") fetchEnrollments();
     else if (activeTab === "messages") fetchMessages();
     else if (activeTab === "courses") fetchCourses();
-  }, [activeTab]);
+    else if (activeTab === "admins") fetchAdmins();
+  }, [activeTab, user, isAdmin]);
 
   async function fetchOfficers() {
     setLoading(true);
@@ -128,6 +150,22 @@ export default function Admin() {
     }
   }
 
+  async function fetchAdmins() {
+    setLoading(true);
+    setError(null);
+    try {
+      const q = query(collection(db, "admins"), orderBy("createdAt", "desc"));
+      const snap = await getDocs(q);
+      const list: any[] = [];
+      snap.forEach(d => list.push({ id: d.id, ...d.data() }));
+      setAdmins(list);
+    } catch (err: any) {
+      setError(err.message || "Failed to load admins");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function handleDeleteUser(userId: string) {
     if (!window.confirm("Delete this officer permanently?")) return;
     try {
@@ -189,6 +227,73 @@ export default function Admin() {
     }
   }
 
+  async function handleAddAdmin(e: React.FormEvent) {
+    e.preventDefault();
+    if (!selectedAdminUser) return;
+    setAddAdminLoading(true);
+    setAddAdminError("");
+    try {
+      const userRef = doc(db, "admins", selectedAdminUser.id);
+      const existing = await getDoc(userRef);
+      if (existing.exists()) {
+        setAddAdminError("User is already an admin");
+        setAddAdminLoading(false);
+        return;
+      }
+      await setDoc(userRef, {
+        email: selectedAdminUser.email || "",
+        role: addAdminRole,
+        createdAt: Timestamp.now(),
+      });
+      setShowAddAdmin(false);
+      setAddAdminSearch("");
+      setAdminSearchResults([]);
+      setSelectedAdminUser(null);
+      setAddAdminRole("manager");
+      fetchAdmins();
+    } catch (err: any) {
+      setAddAdminError(err.message || "Failed to add admin");
+    } finally {
+      setAddAdminLoading(false);
+    }
+  }
+
+  async function handleRemoveAdmin(adminId: string) {
+    if (!window.confirm("Remove this admin?")) return;
+    try {
+      await deleteDoc(doc(db, "admins", adminId));
+      setAdmins(prev => prev.filter(a => a.id !== adminId));
+    } catch (err: any) {
+      alert("Failed to remove: " + err.message);
+    }
+  }
+
+  async function handleUpdateAdminRole(adminId: string, role: string) {
+    try {
+      await updateDoc(doc(db, "admins", adminId), { role });
+      setAdmins(prev => prev.map(a => (a.id === adminId ? { ...a, role } : a)));
+    } catch (err: any) {
+      alert("Failed to update role: " + err.message);
+    }
+  }
+
+  function handleAdminSearch(val: string) {
+    setAddAdminSearch(val);
+    const t = val.toLowerCase();
+    const results = officers.filter(o => {
+      const name = `${o.firstName || ""} ${o.surname || ""} ${o.otherName || ""}`.toLowerCase();
+      const sn = String(o.serviceNumber || "").toLowerCase();
+      return name.includes(t) || sn.includes(t) || String(o.email || "").toLowerCase().includes(t);
+    });
+    setAdminSearchResults(results);
+  }
+
+  function selectAdminUser(o: any) {
+    setSelectedAdminUser(o);
+    setAddAdminSearch(`${o.firstName || ""} ${o.surname || ""} (${o.serviceNumber || ""})`);
+    setAdminSearchResults([]);
+  }
+
   const filteredOfficers = officers.filter(o => {
     if (!searchTerm) return true;
     const t = searchTerm.toLowerCase();
@@ -196,6 +301,55 @@ export default function Admin() {
     const sn = String(o.serviceNumber || "").toLowerCase();
     return name.includes(t) || sn.includes(t);
   });
+
+  const isSuperAdmin = isAdmin && profile?.email === "ekwueme416@gmail.com";
+
+  async function handleLoginSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setLoginError("");
+    setLoginLoading(true);
+    try {
+      await login(loginEmail, loginPassword);
+    } catch {
+      setLoginError("Invalid email or password");
+    } finally {
+      setLoginLoading(false);
+    }
+  }
+
+  async function handleGoogleLogin() {
+    setLoginError("");
+    setLoginLoading(true);
+    try {
+      await loginWithGoogle();
+    } catch (err: any) {
+      const c = err.code;
+      if (c === "auth/popup-blocked")
+        setLoginError("Pop-up was blocked. Allow pop-ups and try again.");
+      else if (c === "auth/popup-closed-by-user")
+        setLoginError("Sign-in cancelled. Try again or use email/password.");
+      else if (c === "auth/unauthorized-domain")
+        setLoginError("This domain is not authorized for Google sign-in.");
+      else if (c === "auth/account-exists-with-different-credential")
+        setLoginError("An account already exists with this email using a different sign-in method.");
+      else
+        setLoginError(`Google sign-in failed${c ? ` (${c})` : ""}. Try email/password instead.`);
+    } finally {
+      setLoginLoading(false);
+    }
+  }
+
+  async function handleLogout() {
+    await logout();
+  }
+
+  async function copyIdLink(sn: string) {
+    try {
+      await navigator.clipboard.writeText(`${window.location.origin}/verify-id?sn=${sn}`);
+      setCopiedId(sn);
+      setTimeout(() => setCopiedId(null), 2000);
+    } catch {}
+  }
 
   if (authLoading) {
     return (
@@ -206,7 +360,87 @@ export default function Admin() {
     );
   }
 
-  if (!profile || !isAdmin) {
+  if (!user) {
+    return (
+      <div className="overlay">
+        <div className="form-section">
+          <div className="form-container">
+            <img src="/logo.png" alt="CADET-I" className="form-logo" />
+            <h2>ADMIN PORTAL</h2>
+            <p className="subtitle">Authorized Personnel Only</p>
+
+            <form onSubmit={handleLoginSubmit}>
+              <div className="input-group">
+                <i className="fas fa-envelope input-icon" />
+                <input
+                  type="email" required placeholder="Admin Email"
+                  value={loginEmail} onChange={e => setLoginEmail(e.target.value)}
+                  disabled={loginLoading}
+                />
+              </div>
+
+              <div className="input-group">
+                <i className="fas fa-lock input-icon" />
+                <input
+                  type={showPass ? "text" : "password"} required placeholder="Password"
+                  value={loginPassword} onChange={e => setLoginPassword(e.target.value)}
+                  disabled={loginLoading}
+                />
+                <span className="toggle-pass" onClick={() => setShowPass(!showPass)}>
+                  <i className={`fas ${showPass ? "fa-eye-slash" : "fa-eye"}`} />
+                </span>
+              </div>
+
+              <button type="submit" className={loginLoading ? "loading" : ""} disabled={loginLoading} style={{
+                width: "100%", padding: "14px", border: "none", borderRadius: 8,
+                background: "var(--cmd-green)", color: "#fff", fontSize: 15,
+                fontWeight: 700, cursor: loginLoading ? "not-allowed" : "pointer",
+                display: "flex", alignItems: "center", justifyContent: "center", gap: 10
+              }}>
+                <span className="btn-text">SIGN IN</span>
+                {loginLoading && <span className="spinner" />}
+              </button>
+
+              {loginError && (
+                <div className="status-box" style={{ background: "#fef2f2", color: "#991b1b", border: "1px solid #fecaca", marginTop: 16 }}>
+                  <i className="fas fa-exclamation-circle" style={{ marginRight: 8 }} />
+                  {loginError}
+                </div>
+              )}
+            </form>
+
+            <div className="auth-footer">
+              <div className="divider-row">
+                <span className="divider-line" />
+                <span className="divider-text">or continue with</span>
+                <span className="divider-line" />
+              </div>
+              <button onClick={handleGoogleLogin} className="google-btn" disabled={loginLoading}>
+                <svg className="google-icon" viewBox="0 0 48 48">
+                  <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                  <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                  <path fill="#FBBC05" d="M10.54 28.59A14.5 14.5 0 0 1 9.5 24c0-1.59.28-3.14.76-4.59l-7.98-6.19A23.99 23.99 0 0 0 0 24c0 3.77.87 7.35 2.56 10.56l7.98-5.97z"/>
+                  <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 5.97C6.51 42.62 14.62 48 24 48z"/>
+                </svg>
+                Sign in with Google
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (profileLoading) {
+    return (
+      <div className="login-overlay">
+        <div className="spinner"></div>
+        <p>Loading profile...</p>
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
     return (
       <main className="portal-shell">
         <section className="section-padding" style={{
@@ -235,10 +469,13 @@ export default function Admin() {
                 <span>System Online</span>
               </div>
             </div>
+            <button onClick={handleLogout} className="cmd-btn-small" style={{ background: "#991b1b", whiteSpace: "nowrap" }}>
+              <i className="fas fa-sign-out-alt" style={{ marginRight: 6 }} /> Logout
+            </button>
           </div>
 
           <nav className="filter-strip" style={{ display: "flex", gap: "6px", padding: "6px 8px", overflowX: "auto" }}>
-            {["officers", "enrollments", "messages", "courses"].map(tab => (
+            {["officers", "enrollments", "messages", "courses", "admins"].map(tab => (
               <button
                 key={tab}
                 className={`cmd-btn-small${activeTab === tab ? " active" : ""}`}
@@ -319,6 +556,22 @@ export default function Admin() {
                           <td>{formatDate(o.createdAt)}</td>
                           <td>
                             <div className="row-actions">
+                              <button
+                                className="action-icon"
+                                style={{ color: "#2563eb", borderColor: "#bfdbfe", background: "#eff6ff" }}
+                                onClick={() => copyIdLink(o.serviceNumber)}
+                                title="Copy ID verification link"
+                              >
+                                <i className={`fas ${copiedId === o.serviceNumber ? "fa-check" : "fa-link"}`}></i>
+                              </button>
+                              <button
+                                className="action-icon"
+                                style={{ color: "#7c3aed", borderColor: "#ddd6fe", background: "#f5f3ff" }}
+                                onClick={() => setQrOfficer(o)}
+                                title="Show QR code"
+                              >
+                                <i className="fas fa-qrcode"></i>
+                              </button>
                               <button
                                 className="action-icon"
                                 style={{ color: "#be123c", borderColor: "#fecdd3", background: "#fff1f2" }}
@@ -541,8 +794,195 @@ export default function Admin() {
               )}
             </section>
           )}
+
+          {!loading && !error && activeTab === "admins" && (
+            <section>
+              <div className="registry-split-head">
+                <h3>Admin Management</h3>
+                {isSuperAdmin && (
+                  <button
+                    className="cmd-btn-small"
+                    style={{ background: "var(--cmd-green)" }}
+                    onClick={() => {
+                      setShowAddAdmin(true);
+                      setAddAdminError("");
+                      setSelectedAdminUser(null);
+                      setAddAdminSearch("");
+                      setAdminSearchResults([]);
+                    }}
+                  >
+                    + Add Admin
+                  </button>
+                )}
+              </div>
+
+              {showAddAdmin && (
+                <div className="table-container" style={{ padding: 20, marginBottom: 20 }}>
+                  <form onSubmit={handleAddAdmin}>
+                    <div className="input-group-modal">
+                      <label>Search for User</label>
+                      <input
+                        required
+                        placeholder="Type name, service number, or email..."
+                        value={addAdminSearch}
+                        onChange={e => { handleAdminSearch(e.target.value); setSelectedAdminUser(null); }}
+                      />
+                      {adminSearchResults.length > 0 && !selectedAdminUser && (
+                        <div style={{
+                          maxHeight: 200, overflowY: "auto", border: "1px solid #ddd",
+                          borderRadius: 6, marginTop: 4
+                        }}>
+                          {adminSearchResults.map(o => (
+                            <div
+                              key={o.id}
+                              style={{
+                                padding: "8px 12px", cursor: "pointer", fontSize: 13,
+                                borderBottom: "1px solid #eee", display: "flex",
+                                justifyContent: "space-between"
+                              }}
+                              onClick={() => selectAdminUser(o)}
+                            >
+                              <span>{o.firstName || ""} {o.surname || ""}</span>
+                              <span style={{ color: "#888" }}>{o.serviceNumber || ""}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <div className="input-group-modal">
+                      <label>Role</label>
+                      <select
+                        value={addAdminRole}
+                        onChange={e => setAddAdminRole(e.target.value)}
+                        style={{ width: "100%", padding: "10px 12px", borderRadius: 6, border: "1px solid #ddd" }}
+                      >
+                        {ADMIN_ROLES.filter(r => r !== "super-admin").map(r => (
+                          <option key={r} value={r}>{r}</option>
+                        ))}
+                      </select>
+                    </div>
+                    {addAdminError && (
+                      <p style={{ color: "#be123c", fontSize: 13, marginBottom: 8 }}>{addAdminError}</p>
+                    )}
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <button type="submit" className="cmd-btn-small" style={{ background: "var(--cmd-green)" }} disabled={!selectedAdminUser || addAdminLoading}>
+                        {addAdminLoading ? "Adding..." : "Add Admin"}
+                      </button>
+                      <button type="button" className="cmd-btn-small" style={{ background: "var(--cmd-blue)" }} onClick={() => setShowAddAdmin(false)}>
+                        Cancel
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              )}
+
+              {admins.length === 0 ? (
+                <div style={{ textAlign: "center", padding: 40, color: "#667085" }}>
+                  <p>No admins found.</p>
+                </div>
+              ) : (
+                <div className="table-container">
+                  <table className="registry-table">
+                    <thead>
+                      <tr>
+                        <th>S/N</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Created</th>
+                        {isSuperAdmin && <th>Actions</th>}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {admins.map((a, idx) => (
+                        <tr key={a.id}>
+                          <td>{idx + 1}</td>
+                          <td>{escapeHtml(a.email || "")}</td>
+                          <td>
+                            {isSuperAdmin ? (
+                              <select
+                                value={a.role || "manager"}
+                                onChange={ev => handleUpdateAdminRole(a.id, ev.target.value)}
+                                className="rank-badge"
+                                style={{ cursor: "pointer", border: "1px solid #ddd" }}
+                              >
+                                {ADMIN_ROLES.map(r => (
+                                  <option key={r} value={r}>{r}</option>
+                                ))}
+                              </select>
+                            ) : (
+                              <span className="rank-badge">{escapeHtml(a.role || "manager")}</span>
+                            )}
+                          </td>
+                          <td>{formatDate(a.createdAt)}</td>
+                          {isSuperAdmin && (
+                            <td>
+                              <div className="row-actions">
+                                <button
+                                  className="action-icon"
+                                  style={{ color: "#be123c", borderColor: "#fecdd3", background: "#fff1f2" }}
+                                  onClick={() => handleRemoveAdmin(a.id)}
+                                >
+                                  <i className="fas fa-trash"></i>
+                                </button>
+                              </div>
+                            </td>
+                          )}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </section>
+          )}
         </div>
       </div>
+
+      {qrOfficer && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="w-80 rounded-xl bg-white p-6 text-center shadow-2xl">
+            <h3 className="mb-2 text-lg font-bold text-gray-800">Officer QR Code</h3>
+            <p className="mb-4 text-sm text-gray-500">
+              {qrOfficer.firstName || ""} {qrOfficer.surname || ""}
+            </p>
+            <div id="qr-content" className="mb-4 flex justify-center">
+              <QRCodeSVG value={`${window.location.origin}/verify-id?sn=${qrOfficer.serviceNumber}`} size={200} />
+            </div>
+            <p className="mb-4 break-all text-xs text-gray-400">
+              {window.location.origin}/verify-id?sn={qrOfficer.serviceNumber}
+            </p>
+            <div className="flex justify-center gap-3">
+              <button
+                onClick={() => {
+                  const pw = window.open("", "_blank");
+                  if (!pw) return;
+                  pw.document.write(`
+                    <html><head><title>QR - ${qrOfficer.firstName || ""} ${qrOfficer.surname || ""}</title></head>
+                    <body style="text-align:center;font-family:sans-serif;padding-top:40px;">
+                      <h2>CADET I - Enugu Nsukka Chapter</h2>
+                      <h3>${qrOfficer.firstName || ""} ${qrOfficer.surname || ""}</h3>
+                      <p>${qrOfficer.rank || ""} &middot; ${qrOfficer.serviceNumber || ""}</p>
+                      <div id="qr">${document.getElementById("qr-content")?.innerHTML ?? ""}</div>
+                      <p style="margin-top:20px;color:#666;font-size:12px;">${window.location.origin}/verify-id?sn=${qrOfficer.serviceNumber}</p>
+                      <script>window.onload=function(){window.print();window.close();};<\/script>
+                    </body></html>
+                  `);
+                  pw.document.close();
+                }}
+                className="rounded-lg bg-purple-700 px-5 py-2 text-sm font-semibold text-white transition hover:bg-purple-600"
+              >
+                Print
+              </button>
+              <button
+                onClick={() => setQrOfficer(null)}
+                className="rounded-lg border border-gray-300 px-5 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-100"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

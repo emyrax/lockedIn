@@ -3,7 +3,6 @@ import { useEffect } from "react";
 import { AuthProvider } from "./contexts/AuthContext";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
-import AdminRoute from "./components/AdminRoute";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Home from "./pages/Home";
 import About from "./pages/About";
@@ -14,7 +13,6 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
 import Admin from "./pages/Admin";
-import AdminLogin from "./pages/AdminLogin";
 import News from "./pages/News";
 import Events from "./pages/Events";
 import Publications from "./pages/Publications";
@@ -57,8 +55,7 @@ function AppLayout() {
         <Route path="/view" element={<SinglePost />} />
         <Route path="/verify-id" element={<VerifyId />} />
         <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-        <Route path="/admin/login" element={<AdminLogin />} />
-        <Route path="/admin" element={<AdminRoute><Admin /></AdminRoute>} />
+        <Route path="/admin" element={<Admin />} />
       </Routes>
       {showExtras && <Footer />}
     </AuthProvider>

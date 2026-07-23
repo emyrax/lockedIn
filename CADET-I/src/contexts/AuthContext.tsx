@@ -28,6 +28,19 @@ const AuthContext = createContext<AuthContextType>({
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  if (!auth || !db) {
+    return (
+      <div className="portal-shell">
+        <section className="section-padding" style={{ textAlign: "center", minHeight: "60vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div>
+            <h1>Configuration Error</h1>
+            <p>Firebase is not initialized. The application cannot start.</p>
+            <p style={{ fontSize: 13, color: "#888", marginTop: 8 }}>Missing or invalid environment variables. Check Vercel project settings.</p>
+          </div>
+        </section>
+      </div>
+    );
+  }
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<OfficerUser | null>(null);
   const [loading, setLoading] = useState(true);
