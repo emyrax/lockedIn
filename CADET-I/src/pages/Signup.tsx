@@ -238,7 +238,7 @@ export default function Signup() {
           dateOfBirth,
           bloodGroup,
           maritalStatus,
-          rank: rank.trim() || "Member",
+          rank: rank.trim(),
           state,
           area,
           lga: lga.trim(),

@@ -40,6 +40,8 @@ export interface OfficerUser {
   appointment?: string;
   state?: string;
   area?: string;
+  zone?: string;
+  commander?: string;
   lga?: string;
   dateOfBirth?: string;
   bloodGroup?: string;

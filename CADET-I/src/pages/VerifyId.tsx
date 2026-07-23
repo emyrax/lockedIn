@@ -122,6 +122,8 @@ function OfficerProfile({ officer, courses, serviceNumber }: { officer: any; cou
             <InfoBlock label="Appointment" value={officer.appointment} />
             <InfoBlock label="State" value={officer.state} />
             <InfoBlock label="Area" value={officer.area} />
+            <InfoBlock label="Zone" value={officer.zone} />
+            <InfoBlock label="Commander" value={officer.commander} />
             <InfoBlock label="LGA" value={officer.lga} />
           </ProfileSection>
 

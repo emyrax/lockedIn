@@ -187,7 +187,7 @@ export default function Admin() {
 
   function handleOpenEdit(o: any) {
     const fields: Record<string, string> = {};
-    const map = ["firstName","surname","otherName","gender","dateOfBirth","bloodGroup","genotype","allergies","medicalConditions","emergencyPhone","maritalStatus","phone","email","address","serviceNumber","rank","department","postHeld","appointment","state","area","lga","occupation","employer","education","nokName","nokRelation","nokPhone","nokAddress","passportUrl","signatureUrl"];
+    const map = ["firstName","surname","otherName","gender","dateOfBirth","bloodGroup","genotype","allergies","medicalConditions","emergencyPhone","maritalStatus","phone","email","address","serviceNumber","rank","department","postHeld","appointment","state","area","zone","commander","lga","occupation","employer","education","nokName","nokRelation","nokPhone","nokAddress","passportUrl","signatureUrl"];
     map.forEach(k => fields[k] = o[k] || "");
     setEditForm(fields);
     setEditOfficer(o);
@@ -1127,6 +1127,18 @@ export default function Admin() {
                   </select>
                 </div>
                 <div className="input-group-modal">
+                  <label>Area</label>
+                  <input value={addForm.area || ""} onChange={e => setAddForm(p => ({ ...p, area: e.target.value }))} />
+                </div>
+                <div className="input-group-modal">
+                  <label>Zone</label>
+                  <input value={addForm.zone || ""} onChange={e => setAddForm(p => ({ ...p, zone: e.target.value }))} />
+                </div>
+                <div className="input-group-modal">
+                  <label>Commander</label>
+                  <input value={addForm.commander || ""} onChange={e => setAddForm(p => ({ ...p, commander: e.target.value }))} />
+                </div>
+                <div className="input-group-modal">
                   <label>State</label>
                   <input value={addForm.state || ""} onChange={e => setAddForm(p => ({ ...p, state: e.target.value }))} />
                 </div>
@@ -1257,6 +1269,18 @@ export default function Admin() {
                 <div className="input-group-modal">
                   <label>Appointment</label>
                   <input value={editForm.appointment || ""} onChange={e => setEditForm(p => ({ ...p, appointment: e.target.value }))} />
+                </div>
+                <div className="input-group-modal">
+                  <label>Area</label>
+                  <input value={editForm.area || ""} onChange={e => setEditForm(p => ({ ...p, area: e.target.value }))} />
+                </div>
+                <div className="input-group-modal">
+                  <label>Zone</label>
+                  <input value={editForm.zone || ""} onChange={e => setEditForm(p => ({ ...p, zone: e.target.value }))} />
+                </div>
+                <div className="input-group-modal">
+                  <label>Commander</label>
+                  <input value={editForm.commander || ""} onChange={e => setEditForm(p => ({ ...p, commander: e.target.value }))} />
                 </div>
                 <div className="input-group-modal">
                   <label>State</label>

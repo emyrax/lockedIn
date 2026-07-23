@@ -139,7 +139,7 @@ export default function Dashboard() {
           <div className="portal-greeting">
             <h1>Welcome back, {escapeHtml(userProfile?.surname || "Officer")}</h1>
             <p className="portal-greeting-sub">
-              National Portal — {userProfile?.rank || "Member"} &bull; {userProfile?.serviceNumber || ""}
+              National Portal — {userProfile?.rank || ""} &bull; {userProfile?.serviceNumber || ""}
             </p>
           </div>
           <div className="portal-stats">
@@ -173,7 +173,7 @@ export default function Dashboard() {
                 <h2 className="profile-name">
                   {escapeHtml(userProfile?.surname)} {escapeHtml(userProfile?.firstName)}
                 </h2>
-                <p className="profile-rank">{userProfile?.rank || "Member"}</p>
+                <p className="profile-rank">{userProfile?.rank || ""}</p>
                 <div className="profile-details">
                   <div><strong>Service No:</strong> {escapeHtml(userProfile?.serviceNumber)}</div>
                   <div><strong>State:</strong> {escapeHtml(userProfile?.state)}</div>
