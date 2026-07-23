@@ -43,7 +43,7 @@ export default function Footer() {
         </div>
 
         <div className="footer-bottom">
-          <p>&copy; {new Date().getFullYear()} CADETI | Developed by Oracle Tek GS. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} CADETI | Developed by Emyrax. All rights reserved.</p>
         </div>
       </div>
 

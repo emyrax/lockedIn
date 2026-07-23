@@ -43,6 +43,10 @@ export interface OfficerUser {
   lga?: string;
   dateOfBirth?: string;
   bloodGroup?: string;
+  genotype?: string;
+  allergies?: string;
+  medicalConditions?: string;
+  emergencyPhone?: string;
   maritalStatus?: string;
   education?: string;
   nokName?: string;

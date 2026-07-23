@@ -7,7 +7,7 @@ import {
 import { db } from "../config/firebase";
 import { useAuth } from "../contexts/AuthContext";
 import {
-  escapeHtml, formatDate, truncate, getGoogleDriveUrl
+  escapeHtml, formatDate, truncate, getGoogleDriveUrl, RANKS, DEPARTMENTS
 } from "../utils";
 import { QRCodeSVG } from "qrcode.react";
 
@@ -57,6 +57,24 @@ export default function Admin() {
   const [qrOfficer, setQrOfficer] = useState<any | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
+  const [editOfficer, setEditOfficer] = useState<any | null>(null);
+  const [editForm, setEditForm] = useState<Record<string, string>>({});
+  const [editSaving, setEditSaving] = useState(false);
+  const [editError, setEditError] = useState("");
+
+  const [showAddOfficer, setShowAddOfficer] = useState(false);
+  const [addForm, setAddForm] = useState<Record<string, string>>({});
+  const [addSaving, setAddSaving] = useState(false);
+  const [addError, setAddError] = useState("");
+
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
+
+  useEffect(() => {
+    if (!toast) return;
+    const t = setTimeout(() => setToast(null), 3000);
+    return () => clearTimeout(t);
+  }, [toast]);
+
   useEffect(() => {
     document.title = "Admin Panel — CADETI";
   }, []);
@@ -74,10 +92,11 @@ export default function Admin() {
     setLoading(true);
     setError(null);
     try {
-      const q = query(collection(db, "users"), orderBy("createdAt", "desc"));
+      const q = collection(db, "users");
       const snap = await getDocs(q);
       const list: any[] = [];
       snap.forEach(d => list.push({ id: d.id, ...d.data() }));
+      list.sort((a, b) => (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0));
       setOfficers(list);
     } catch (err: any) {
       setError(err.message || "Failed to load officers");
@@ -166,13 +185,65 @@ export default function Admin() {
     }
   }
 
+  function handleOpenEdit(o: any) {
+    const fields: Record<string, string> = {};
+    const map = ["firstName","surname","otherName","gender","dateOfBirth","bloodGroup","genotype","allergies","medicalConditions","emergencyPhone","maritalStatus","phone","email","address","serviceNumber","rank","department","postHeld","appointment","state","area","lga","occupation","employer","education","nokName","nokRelation","nokPhone","nokAddress","passportUrl","signatureUrl"];
+    map.forEach(k => fields[k] = o[k] || "");
+    setEditForm(fields);
+    setEditOfficer(o);
+    setEditError("");
+  }
+
+  async function handleEditSave(e: React.FormEvent) {
+    e.preventDefault();
+    if (!editOfficer) return;
+    setEditSaving(true);
+    setEditError("");
+    try {
+      await updateDoc(doc(db, "users", editOfficer.id), editForm);
+      setEditOfficer(null);
+      setToast({ message: "Officer updated successfully", type: "success" });
+      fetchOfficers();
+    } catch (err: any) {
+      setEditError(err.message || "Failed to update");
+      setToast({ message: err.message || "Failed to update", type: "error" });
+    } finally {
+      setEditSaving(false);
+    }
+  }
+
+  async function handleAddOfficer(e: React.FormEvent) {
+    e.preventDefault();
+    if (!addForm.firstName || !addForm.surname || !addForm.serviceNumber || !addForm.phone || !addForm.rank) {
+      setAddError("Required fields: First Name, Surname, Service Number, Phone, Rank");
+      return;
+    }
+    setAddSaving(true);
+    setAddError("");
+    try {
+      const data = { ...addForm, createdAt: Timestamp.now() };
+      Object.keys(data).forEach(k => { if (!data[k]) delete data[k]; });
+      await addDoc(collection(db, "users"), data);
+      setShowAddOfficer(false);
+      setAddForm({});
+      setToast({ message: "Officer added successfully", type: "success" });
+      fetchOfficers();
+    } catch (err: any) {
+      setAddError(err.message || "Failed to add officer");
+      setToast({ message: err.message || "Failed to add officer", type: "error" });
+    } finally {
+      setAddSaving(false);
+    }
+  }
+
   async function handleDeleteUser(userId: string) {
     if (!window.confirm("Delete this officer permanently?")) return;
     try {
       await deleteDoc(doc(db, "users", userId));
       setOfficers(prev => prev.filter(o => o.id !== userId));
+      setToast({ message: "Officer deleted successfully", type: "success" });
     } catch (err: any) {
-      alert("Failed to delete: " + err.message);
+      setToast({ message: "Failed to delete: " + err.message, type: "error" });
     }
   }
 
@@ -302,7 +373,7 @@ export default function Admin() {
     return name.includes(t) || sn.includes(t);
   });
 
-  const isSuperAdmin = isAdmin && profile?.email === "ekwuemesat@gmail.com";
+  const isSuperAdmin = isAdmin && user?.email === "ekwuemesat@gmail.com";
 
   async function handleLoginSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -505,6 +576,16 @@ export default function Admin() {
 
           {!loading && !error && activeTab === "officers" && (
             <section>
+              <div className="registry-split-head">
+                <h3>All Officers</h3>
+                <button
+                  className="cmd-btn-small"
+                  style={{ background: "var(--cmd-green)" }}
+                  onClick={() => { setShowAddOfficer(true); setAddForm({}); setAddError(""); }}
+                >
+                  + Add Officer
+                </button>
+              </div>
               <div className="filter-strip">
                 <div className="filter-controls" style={{ gridTemplateColumns: "1fr" }}>
                   <div className="search-bar">
@@ -558,6 +639,14 @@ export default function Admin() {
                           <td>{formatDate(o.createdAt)}</td>
                           <td>
                             <div className="row-actions">
+                              <button
+                                className="action-icon"
+                                style={{ color: "#0891b2", borderColor: "#cffafe", background: "#ecfeff" }}
+                                onClick={() => handleOpenEdit(o)}
+                                title="Edit officer"
+                              >
+                                <i className="fas fa-pen"></i>
+                              </button>
                               <button
                                 className="action-icon"
                                 style={{ color: "#2563eb", borderColor: "#bfdbfe", background: "#eff6ff" }}
@@ -811,6 +900,7 @@ export default function Admin() {
                       setSelectedAdminUser(null);
                       setAddAdminSearch("");
                       setAdminSearchResults([]);
+                      if (officers.length === 0) fetchOfficers();
                     }}
                   >
                     + Add Admin
@@ -940,8 +1030,293 @@ export default function Admin() {
         </div>
       </div>
 
+      {showAddOfficer && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.5)", padding: 20 }}>
+          <div style={{ background: "#fff", borderRadius: 16, maxWidth: 700, width: "100%", maxHeight: "90vh", overflowY: "auto", padding: 28, boxShadow: "0 40px 100px #00000080" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+              <h3 style={{ margin: 0 }}>Add New Officer</h3>
+              <button onClick={() => setShowAddOfficer(false)} style={{ background: "none", border: "none", fontSize: 22, cursor: "pointer", color: "#888" }}>&times;</button>
+            </div>
+            <form onSubmit={handleAddOfficer} className="modal-form">
+              <div className="grid-2">
+                <div className="input-group-modal">
+                  <label>First Name *</label>
+                  <input required value={addForm.firstName || ""} onChange={e => setAddForm(p => ({ ...p, firstName: e.target.value }))} />
+                </div>
+                <div className="input-group-modal">
+                  <label>Surname *</label>
+                  <input required value={addForm.surname || ""} onChange={e => setAddForm(p => ({ ...p, surname: e.target.value }))} />
+                </div>
+                <div className="input-group-modal">
+                  <label>Other Name</label>
+                  <input value={addForm.otherName || ""} onChange={e => setAddForm(p => ({ ...p, otherName: e.target.value }))} />
+                </div>
+                <div className="input-group-modal">
+                  <label>Gender</label>
+                  <select value={addForm.gender || ""} onChange={e => setAddForm(p => ({ ...p, gender: e.target.value }))}>
+                    <option value="">Select</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+                <div className="input-group-modal">
+                  <label>Date of Birth</label>
+                  <input type="date" value={addForm.dateOfBirth || ""} onChange={e => setAddForm(p => ({ ...p, dateOfBirth: e.target.value }))} />
+                </div>
+                <div className="input-group-modal">
+                  <label>Blood Group</label>
+                  <select value={addForm.bloodGroup || ""} onChange={e => setAddForm(p => ({ ...p, bloodGroup: e.target.value }))}>
+                    <option value="">Select</option>
+                    {["A+","A-","B+","B-","AB+","AB-","O+","O-"].map(b => <option key={b} value={b}>{b}</option>)}
+                  </select>
+                </div>
+                <div className="input-group-modal">
+                  <label>Genotype</label>
+                  <select value={addForm.genotype || ""} onChange={e => setAddForm(p => ({ ...p, genotype: e.target.value }))}>
+                    <option value="">Select</option>
+                    {["AA","AS","SS","AC"].map(g => <option key={g} value={g}>{g}</option>)}
+                  </select>
+                </div>
+                <div className="input-group-modal">
+                  <label>Allergies</label>
+                  <input value={addForm.allergies || ""} onChange={e => setAddForm(p => ({ ...p, allergies: e.target.value }))} placeholder="e.g. Penicillin, Peanuts" />
+                </div>
+                <div className="input-group-modal">
+                  <label>Medical Conditions</label>
+                  <input value={addForm.medicalConditions || ""} onChange={e => setAddForm(p => ({ ...p, medicalConditions: e.target.value }))} placeholder="e.g. Asthma, Diabetes" />
+                </div>
+                <div className="input-group-modal">
+                  <label>Emergency Phone</label>
+                  <input type="tel" value={addForm.emergencyPhone || ""} onChange={e => setAddForm(p => ({ ...p, emergencyPhone: e.target.value }))} placeholder="Alternate emergency contact" />
+                </div>
+                <div className="input-group-modal">
+                  <label>Marital Status</label>
+                  <select value={addForm.maritalStatus || ""} onChange={e => setAddForm(p => ({ ...p, maritalStatus: e.target.value }))}>
+                    <option value="">Select</option>
+                    <option value="Single">Single</option>
+                    <option value="Married">Married</option>
+                    <option value="Divorced">Divorced</option>
+                    <option value="Widowed">Widowed</option>
+                  </select>
+                </div>
+                <div className="input-group-modal">
+                  <label>Phone *</label>
+                  <input required value={addForm.phone || ""} onChange={e => setAddForm(p => ({ ...p, phone: e.target.value }))} />
+                </div>
+                <div className="input-group-modal">
+                  <label>Email</label>
+                  <input type="email" value={addForm.email || ""} onChange={e => setAddForm(p => ({ ...p, email: e.target.value }))} />
+                </div>
+                <div className="input-group-modal">
+                  <label>Service Number *</label>
+                  <input required value={addForm.serviceNumber || ""} onChange={e => setAddForm(p => ({ ...p, serviceNumber: e.target.value }))} />
+                </div>
+                <div className="input-group-modal">
+                  <label>Rank *</label>
+                  <select required value={addForm.rank || ""} onChange={e => setAddForm(p => ({ ...p, rank: e.target.value }))}>
+                    <option value="">Select Rank</option>
+                    {RANKS.map(r => <option key={r} value={r}>{r}</option>)}
+                  </select>
+                </div>
+                <div className="input-group-modal">
+                  <label>Department</label>
+                  <select value={addForm.department || ""} onChange={e => setAddForm(p => ({ ...p, department: e.target.value }))}>
+                    <option value="">Select</option>
+                    {DEPARTMENTS.map(d => <option key={d} value={d}>{d}</option>)}
+                  </select>
+                </div>
+                <div className="input-group-modal">
+                  <label>State</label>
+                  <input value={addForm.state || ""} onChange={e => setAddForm(p => ({ ...p, state: e.target.value }))} />
+                </div>
+                <div className="input-group-modal">
+                  <label>LGA</label>
+                  <input value={addForm.lga || ""} onChange={e => setAddForm(p => ({ ...p, lga: e.target.value }))} />
+                </div>
+                <div className="input-group-modal">
+                  <label>Occupation</label>
+                  <input value={addForm.occupation || ""} onChange={e => setAddForm(p => ({ ...p, occupation: e.target.value }))} />
+                </div>
+                <div className="input-group-modal">
+                  <label>Employer</label>
+                  <input value={addForm.employer || ""} onChange={e => setAddForm(p => ({ ...p, employer: e.target.value }))} />
+                </div>
+                <div className="input-group-modal" style={{ gridColumn: "1 / -1" }}>
+                  <label>Address</label>
+                  <textarea rows={2} value={addForm.address || ""} onChange={e => setAddForm(p => ({ ...p, address: e.target.value }))} />
+                </div>
+              </div>
+              {addError && <p style={{ color: "#be123c", fontSize: 13 }}>{addError}</p>}
+              <div style={{ display: "flex", gap: 8 }}>
+                <button type="submit" className="cmd-btn-small" style={{ background: "var(--cmd-green)" }} disabled={addSaving}>
+                  {addSaving ? "Saving..." : "Add Officer"}
+                </button>
+                <button type="button" className="cmd-btn-small" style={{ background: "var(--cmd-blue)" }} onClick={() => setShowAddOfficer(false)}>Cancel</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {editOfficer && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.5)", padding: 20 }}>
+          <div style={{ background: "#fff", borderRadius: 16, maxWidth: 700, width: "100%", maxHeight: "90vh", overflowY: "auto", padding: 28, boxShadow: "0 40px 100px #00000080" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+              <h3 style={{ margin: 0 }}>Edit Officer</h3>
+              <button onClick={() => setEditOfficer(null)} style={{ background: "none", border: "none", fontSize: 22, cursor: "pointer", color: "#888" }}>&times;</button>
+            </div>
+            <form onSubmit={handleEditSave} className="modal-form">
+              <div className="grid-2">
+                <div className="input-group-modal">
+                  <label>First Name</label>
+                  <input required value={editForm.firstName || ""} onChange={e => setEditForm(p => ({ ...p, firstName: e.target.value }))} />
+                </div>
+                <div className="input-group-modal">
+                  <label>Surname</label>
+                  <input required value={editForm.surname || ""} onChange={e => setEditForm(p => ({ ...p, surname: e.target.value }))} />
+                </div>
+                <div className="input-group-modal">
+                  <label>Other Name</label>
+                  <input value={editForm.otherName || ""} onChange={e => setEditForm(p => ({ ...p, otherName: e.target.value }))} />
+                </div>
+                <div className="input-group-modal">
+                  <label>Gender</label>
+                  <select value={editForm.gender || ""} onChange={e => setEditForm(p => ({ ...p, gender: e.target.value }))}>
+                    <option value="">Select</option>
+                    <option value="Male">Male</option><option value="Female">Female</option><option value="Other">Other</option>
+                  </select>
+                </div>
+                <div className="input-group-modal">
+                  <label>Date of Birth</label>
+                  <input type="date" value={editForm.dateOfBirth || ""} onChange={e => setEditForm(p => ({ ...p, dateOfBirth: e.target.value }))} />
+                </div>
+                <div className="input-group-modal">
+                  <label>Blood Group</label>
+                  <select value={editForm.bloodGroup || ""} onChange={e => setEditForm(p => ({ ...p, bloodGroup: e.target.value }))}>
+                    <option value="">Select</option>
+                    {["A+","A-","B+","B-","AB+","AB-","O+","O-"].map(b => <option key={b} value={b}>{b}</option>)}
+                  </select>
+                </div>
+                <div className="input-group-modal">
+                  <label>Genotype</label>
+                  <select value={editForm.genotype || ""} onChange={e => setEditForm(p => ({ ...p, genotype: e.target.value }))}>
+                    <option value="">Select</option>
+                    {["AA","AS","SS","AC"].map(g => <option key={g} value={g}>{g}</option>)}
+                  </select>
+                </div>
+                <div className="input-group-modal">
+                  <label>Allergies</label>
+                  <input value={editForm.allergies || ""} onChange={e => setEditForm(p => ({ ...p, allergies: e.target.value }))} placeholder="e.g. Penicillin, Peanuts" />
+                </div>
+                <div className="input-group-modal">
+                  <label>Medical Conditions</label>
+                  <input value={editForm.medicalConditions || ""} onChange={e => setEditForm(p => ({ ...p, medicalConditions: e.target.value }))} placeholder="e.g. Asthma, Diabetes" />
+                </div>
+                <div className="input-group-modal">
+                  <label>Emergency Phone</label>
+                  <input type="tel" value={editForm.emergencyPhone || ""} onChange={e => setEditForm(p => ({ ...p, emergencyPhone: e.target.value }))} placeholder="Alternate emergency contact" />
+                </div>
+                <div className="input-group-modal">
+                  <label>Marital Status</label>
+                  <select value={editForm.maritalStatus || ""} onChange={e => setEditForm(p => ({ ...p, maritalStatus: e.target.value }))}>
+                    <option value="">Select</option>
+                    <option value="Single">Single</option><option value="Married">Married</option><option value="Divorced">Divorced</option><option value="Widowed">Widowed</option>
+                  </select>
+                </div>
+                <div className="input-group-modal">
+                  <label>Phone</label>
+                  <input required value={editForm.phone || ""} onChange={e => setEditForm(p => ({ ...p, phone: e.target.value }))} />
+                </div>
+                <div className="input-group-modal">
+                  <label>Email</label>
+                  <input type="email" value={editForm.email || ""} onChange={e => setEditForm(p => ({ ...p, email: e.target.value }))} />
+                </div>
+                <div className="input-group-modal">
+                  <label>Service Number</label>
+                  <input required value={editForm.serviceNumber || ""} onChange={e => setEditForm(p => ({ ...p, serviceNumber: e.target.value }))} />
+                </div>
+                <div className="input-group-modal">
+                  <label>Rank</label>
+                  <select required value={editForm.rank || ""} onChange={e => setEditForm(p => ({ ...p, rank: e.target.value }))}>
+                    <option value="">Select Rank</option>
+                    {RANKS.map(r => <option key={r} value={r}>{r}</option>)}
+                  </select>
+                </div>
+                <div className="input-group-modal">
+                  <label>Department</label>
+                  <select value={editForm.department || ""} onChange={e => setEditForm(p => ({ ...p, department: e.target.value }))}>
+                    <option value="">Select</option>
+                    {DEPARTMENTS.map(d => <option key={d} value={d}>{d}</option>)}
+                  </select>
+                </div>
+                <div className="input-group-modal">
+                  <label>Post Held</label>
+                  <input value={editForm.postHeld || ""} onChange={e => setEditForm(p => ({ ...p, postHeld: e.target.value }))} />
+                </div>
+                <div className="input-group-modal">
+                  <label>Appointment</label>
+                  <input value={editForm.appointment || ""} onChange={e => setEditForm(p => ({ ...p, appointment: e.target.value }))} />
+                </div>
+                <div className="input-group-modal">
+                  <label>State</label>
+                  <input value={editForm.state || ""} onChange={e => setEditForm(p => ({ ...p, state: e.target.value }))} />
+                </div>
+                <div className="input-group-modal">
+                  <label>LGA</label>
+                  <input value={editForm.lga || ""} onChange={e => setEditForm(p => ({ ...p, lga: e.target.value }))} />
+                </div>
+                <div className="input-group-modal">
+                  <label>Occupation</label>
+                  <input value={editForm.occupation || ""} onChange={e => setEditForm(p => ({ ...p, occupation: e.target.value }))} />
+                </div>
+                <div className="input-group-modal">
+                  <label>Employer</label>
+                  <input value={editForm.employer || ""} onChange={e => setEditForm(p => ({ ...p, employer: e.target.value }))} />
+                </div>
+                <div className="input-group-modal">
+                  <label>Education</label>
+                  <input value={editForm.education || ""} onChange={e => setEditForm(p => ({ ...p, education: e.target.value }))} />
+                </div>
+                <div className="input-group-modal">
+                  <label>Next of Kin Name</label>
+                  <input value={editForm.nokName || ""} onChange={e => setEditForm(p => ({ ...p, nokName: e.target.value }))} />
+                </div>
+                <div className="input-group-modal">
+                  <label>Next of Kin Relation</label>
+                  <input value={editForm.nokRelation || ""} onChange={e => setEditForm(p => ({ ...p, nokRelation: e.target.value }))} />
+                </div>
+                <div className="input-group-modal">
+                  <label>Next of Kin Phone</label>
+                  <input value={editForm.nokPhone || ""} onChange={e => setEditForm(p => ({ ...p, nokPhone: e.target.value }))} />
+                </div>
+                <div className="input-group-modal" style={{ gridColumn: "1 / -1" }}>
+                  <label>Next of Kin Address</label>
+                  <textarea rows={2} value={editForm.nokAddress || ""} onChange={e => setEditForm(p => ({ ...p, nokAddress: e.target.value }))} />
+                </div>
+                <div className="input-group-modal">
+                  <label>Passport URL</label>
+                  <input value={editForm.passportUrl || ""} onChange={e => setEditForm(p => ({ ...p, passportUrl: e.target.value }))} />
+                </div>
+                <div className="input-group-modal">
+                  <label>Signature URL</label>
+                  <input value={editForm.signatureUrl || ""} onChange={e => setEditForm(p => ({ ...p, signatureUrl: e.target.value }))} />
+                </div>
+              </div>
+              {editError && <p style={{ color: "#be123c", fontSize: 13 }}>{editError}</p>}
+              <div style={{ display: "flex", gap: 8 }}>
+                <button type="submit" className="cmd-btn-small" style={{ background: "var(--cmd-green)" }} disabled={editSaving}>
+                  {editSaving ? "Saving..." : "Save Changes"}
+                </button>
+                <button type="button" className="cmd-btn-small" style={{ background: "var(--cmd-blue)" }} onClick={() => setEditOfficer(null)}>Cancel</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {qrOfficer && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+        <div style={{ position: "fixed", inset: 0, zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.5)" }}>
           <div className="w-80 rounded-xl bg-white p-6 text-center shadow-2xl">
             <h3 className="mb-2 text-lg font-bold text-gray-800">Officer QR Code</h3>
             <p className="mb-4 text-sm text-gray-500">
@@ -976,6 +1351,30 @@ export default function Admin() {
                 Print
               </button>
               <button
+                onClick={() => {
+                  const svg = document.getElementById("qr-content")?.querySelector("svg");
+                  if (!svg) return;
+                  const svgData = new XMLSerializer().serializeToString(svg);
+                  const img = new Image();
+                  const blob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
+                  const url = URL.createObjectURL(blob);
+                  img.onload = () => {
+                    const c = document.createElement("canvas");
+                    c.width = 500; c.height = 500;
+                    const ctx = c.getContext("2d");
+                    if (ctx) { ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, 500, 500); ctx.drawImage(img, 0, 0, 500, 500); }
+                    c.toBlob(pngBlob => {
+                      if (pngBlob) { const a = document.createElement("a"); a.href = URL.createObjectURL(pngBlob); a.download = `qr-${qrOfficer.serviceNumber || "officer"}.png`; a.click(); }
+                      URL.revokeObjectURL(url);
+                    });
+                  };
+                  img.src = url;
+                }}
+                className="rounded-lg bg-green-700 px-5 py-2 text-sm font-semibold text-white transition hover:bg-green-600"
+              >
+                Download PNG
+              </button>
+              <button
                 onClick={() => setQrOfficer(null)}
                 className="rounded-lg border border-gray-300 px-5 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-100"
               >
@@ -983,6 +1382,21 @@ export default function Admin() {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {toast && (
+        <div style={{
+          position: "fixed", top: 24, right: 24, zIndex: 9999,
+          padding: "14px 24px", borderRadius: 10,
+          background: toast.type === "success" ? "#065f46" : "#991b1b",
+          color: "#fff", fontSize: 14, fontWeight: 600,
+          boxShadow: "0 8px 30px rgba(0,0,0,0.3)",
+          display: "flex", alignItems: "center", gap: 10,
+          animation: "fadeIn 0.3s ease-out"
+        }}>
+          <i className={`fas ${toast.type === "success" ? "fa-check-circle" : "fa-exclamation-circle"}`} />
+          {toast.message}
         </div>
       )}
     </div>
