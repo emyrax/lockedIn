@@ -20,7 +20,7 @@ interface Course {
 }
 
 export default function Dashboard() {
-  const { currentUser, userProfile, isAdmin, loading, logout } = useAuth();
+  const { user: currentUser, profile: userProfile, isAdmin, loading, logout } = useAuth();
   const navigate = useNavigate();
 
   const [enrollments, setEnrollments] = useState<Enrollment[]>([]);

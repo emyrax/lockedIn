@@ -29,6 +29,7 @@ export interface OfficerUser {
   otherName?: string;
   address?: string;
   occupation?: string;
+  employer?: string;
   gender?: string;
   phone: string;
   email: string;
@@ -39,6 +40,11 @@ export interface OfficerUser {
   appointment?: string;
   state?: string;
   area?: string;
+  lga?: string;
+  dateOfBirth?: string;
+  bloodGroup?: string;
+  maritalStatus?: string;
+  education?: string;
   nokName?: string;
   nokRelation?: string;
   nokPhone?: string;

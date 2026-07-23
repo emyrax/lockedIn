@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState, useRef } from "react";
-import { onAuthStateChanged, signOut } from "firebase/auth";
+import { onAuthStateChanged, signOut, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import type { User } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import { auth, db } from "../config/firebase";
 import type { OfficerUser } from "../types";
 
@@ -14,11 +14,15 @@ interface AuthContextType {
   loading: boolean;
   isAdmin: boolean;
   isMediaAdmin: boolean;
+  login: (email: string, password: string) => Promise<void>;
+  loginWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
   user: null, profile: null, loading: true, isAdmin: false, isMediaAdmin: false,
+  login: async () => {},
+  loginWithGoogle: async () => {},
   logout: async () => {},
 });
 
@@ -43,13 +47,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             const data = snap.data() as OfficerUser;
             setProfile(data);
           }
-          const adminSnap = await getDoc(doc(db, "admins", u.uid));
+          const adminRef = doc(db, "admins", u.uid);
+          const adminSnap = await getDoc(adminRef);
           if (adminSnap.exists()) {
             const adminData = adminSnap.data();
             setIsAdmin(true);
             setIsMediaAdmin(String(adminData.role || adminData.Role || "").toLowerCase().includes("media"));
           } else {
-            setIsAdmin(false);
+            if (u.email === "ekwueme416@gmail.com") {
+              await setDoc(adminRef, {
+                email: "ekwueme416@gmail.com",
+                role: "super-admin",
+                createdAt: serverTimestamp(),
+              });
+              setIsAdmin(true);
+            } else {
+              setIsAdmin(false);
+            }
             setIsMediaAdmin(false);
           }
         } catch { /* ignore */ }
@@ -103,15 +117,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => { if (idleRef.current) clearInterval(idleRef.current); };
   }, [user]);
 
+  async function login(email: string, password: string) {
+    await signInWithEmailAndPassword(auth, email, password);
+    sessionStorage.setItem("auth_session", "active");
+  }
+
+  async function loginWithGoogle() {
+    const provider = new GoogleAuthProvider();
+    await signInWithPopup(auth, provider);
+    sessionStorage.setItem("auth_session", "active");
+  }
+
   async function logout() {
     sessionStorage.removeItem("cadeti_session_started_at");
     sessionStorage.removeItem("cadeti_session_last_activity_at");
     await signOut(auth);
-    window.location.replace("/login");
   }
 
   return (
-    <AuthContext.Provider value={{ user, profile, loading, isAdmin, isMediaAdmin, logout }}>
+    <AuthContext.Provider value={{ user, profile, loading, isAdmin, isMediaAdmin, login, loginWithGoogle, logout }}>
       {children}
     </AuthContext.Provider>
   );

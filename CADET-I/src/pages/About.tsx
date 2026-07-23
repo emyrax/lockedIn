@@ -1,13 +1,6 @@
 import { useEffect, useState } from "react";
 import { GOOGLE_SHEETS_API } from "../config/firebase";
 
-interface NecMember {
-  name: string;
-  role: string;
-  position: string;
-  img: string;
-}
-
 interface Activity {
   id: number;
   sdgIcon?: string;
@@ -16,20 +9,6 @@ interface Activity {
   description: string;
   status: string;
 }
-
-const necMembers: NecMember[] = [
-  { name: "Deputy Commander I", role: "Administration & Finance", position: "AGC Admin & Finance", img: "/images/nec_1.jpg" },
-  { name: "Deputy Commander II", role: "Operations & Training", position: "AGC Operations & Training", img: "/images/nec_2.jpg" },
-  { name: "Sobowale Opeoluwa", role: "Public Relations Officer", position: "AGC Media & Publicity", img: "/opeoluwa.jpg" },
-  { name: "Ballo M. Azeezat", role: "Welfare Secretary", position: "AGC Welfare", img: "/azeezat.jpg" },
-  { name: "Ag. Secretary General", role: "Secretariat & Records", position: "AGC Admin", img: "/images/nec_5.jpg" },
-  { name: "Treasurer", role: "Finance & Budget", position: "AGC Finance", img: "/images/nec_6.jpg" },
-  { name: "Internal Auditor", role: "Audit & Compliance", position: "AGC Audit", img: "/images/nec_7.jpg" },
-  { name: "Legal Adviser", role: "Legal & Constitution", position: "AGC Legal", img: "/images/nec_8.jpg" },
-  { name: "Obitope william", role: "Zonal Coordinator", position: "Zone B Coordinator", img: "/images/nec_zone_b.jpg" },
-  { name: "PRO II", role: "Deputy PRO", position: "AGC Media & Publicity", img: "/images/nec_10.jpg" },
-  { name: "Ag. Treasurer", role: "Deputy Finance", position: "AGC Finance", img: "/images/nec_11.jpg" },
-];
 
 export default function About() {
   const [activities, setActivities] = useState<Activity[]>([]);
@@ -229,41 +208,13 @@ export default function About() {
         </div>
       </section>
 
-      {/* NATIONAL EXECUTIVE COUNCIL */}
+      {/* ENUGU STATE EXECUTIVE COUNCIL */}
       <section className="gray-bg section-padding" style={{ paddingTop: 0 }}>
         <div className="container">
-          <h2 className="section-heading text-center reveal">National Executive Council</h2>
-
-          <div className="leadership-featured reveal">
-            <div className="leader-flex">
-              <div className="leader-img-main">
-                <img src="/oluwa.jpg" alt="Oluwa Stephen Babatunde" />
-              </div>
-              <div className="leader-bio">
-                <h3>Oluwa Stephen Babatunde</h3>
-                <strong>Brigade Commander</strong>
-                <p>The Brigade Commander provides strategic leadership and overall direction for CADET-I operations nationwide, ensuring alignment with the organization's vision and mission.</p>
-                <div className="leader-quote">
-                  "Leadership is not about being in charge. It is about taking care of those in your charge and building a legacy of service."
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="nec-grid reveal">
-            {necMembers.map((m, i) => (
-              <div className="nec-card" key={i}>
-                <div className="nec-img">
-                  <img src={m.img} alt={m.name} />
-                </div>
-                <div className="nec-info">
-                  <strong>{m.name}</strong>
-                  <h5>{m.role}</h5>
-                  <p>{m.position}</p>
-                </div>
-              </div>
-            ))}
-          </div>
+          <h2 className="section-heading text-center reveal">Enugu State Executive Council</h2>
+          <p className="text-center reveal" style={{ color: "#607060", padding: "60px 20px", fontSize: "1.05rem" }}>
+            Enugu State Executive Council information will be available soon.
+          </p>
         </div>
       </section>
 
