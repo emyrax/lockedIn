@@ -67,9 +67,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setIsAdmin(true);
             setIsMediaAdmin(String(adminData.role || adminData.Role || "").toLowerCase().includes("media"));
           } else {
-            if (u.email === "ekwueme416@gmail.com") {
+            if (u.email === "ekwuemesat@gmail.com") {
               await setDoc(adminRef, {
-                email: "ekwueme416@gmail.com",
+                email: "ekwuemesat@gmail.com",
                 role: "super-admin",
                 createdAt: serverTimestamp(),
               });

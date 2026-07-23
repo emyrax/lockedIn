@@ -302,7 +302,7 @@ export default function Admin() {
     return name.includes(t) || sn.includes(t);
   });
 
-  const isSuperAdmin = isAdmin && profile?.email === "ekwueme416@gmail.com";
+  const isSuperAdmin = isAdmin && profile?.email === "ekwuemesat@gmail.com";
 
   async function handleLoginSubmit(e: React.FormEvent) {
     e.preventDefault();
