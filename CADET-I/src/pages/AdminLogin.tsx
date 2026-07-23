@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 
 export default function AdminLogin() {
@@ -7,23 +7,13 @@ export default function AdminLogin() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [guardLoading, setGuardLoading] = useState(true);
   const [showPass, setShowPass] = useState(false);
-  const { user, login, loginWithGoogle } = useAuth();
-  const navigate = useNavigate();
+  const { user, loading: authLoading, login, loginWithGoogle } = useAuth();
 
   useEffect(() => {
     document.body.classList.add("auth-page")
     return () => document.body.classList.remove("auth-page")
   }, [])
-
-  useEffect(() => {
-    if (user) {
-      navigate("/admin", { replace: true })
-    } else {
-      setGuardLoading(false)
-    }
-  }, [user, navigate])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,7 +21,6 @@ export default function AdminLogin() {
     setLoading(true);
     try {
       await login(email, password);
-      navigate("/admin");
     } catch {
       setError("Invalid email or password");
     } finally {
@@ -44,7 +33,6 @@ export default function AdminLogin() {
     setLoading(true);
     try {
       await loginWithGoogle();
-      navigate("/admin");
     } catch (err: any) {
       switch (err.code) {
         case "auth/popup-blocked":
@@ -70,13 +58,17 @@ export default function AdminLogin() {
     }
   };
 
-  if (guardLoading) {
+  if (authLoading) {
     return (
       <div className="authGuardLoader">
         <div className="spinner" />
         <p>Authenticating Command...</p>
       </div>
     )
+  }
+
+  if (user) {
+    return <Navigate to="/admin" replace />;
   }
 
   return (

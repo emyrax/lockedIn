@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { Link, useNavigate } from "react-router-dom"
+import { Link, useNavigate, Navigate } from "react-router-dom"
 import { signInWithEmailAndPassword, sendPasswordResetEmail } from "firebase/auth"
 import { collection, addDoc, serverTimestamp } from "firebase/firestore"
 import { auth, db, GOOGLE_SHEETS_API, generateEmail } from "../config/firebase"
@@ -7,13 +7,12 @@ import { useAuth } from "../contexts/AuthContext"
 
 export default function Login() {
   const navigate = useNavigate()
-  const { user } = useAuth()
+  const { user, profile, loading: authLoading, profileLoading, isAdmin } = useAuth()
 
   const [loginUser, setLoginUser] = useState("")
   const [loginPass, setLoginPass] = useState("")
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
-  const [guardLoading, setGuardLoading] = useState(true)
   const [showPass, setShowPass] = useState(false)
 
   const [showModal, setShowModal] = useState(false)
@@ -29,14 +28,6 @@ export default function Login() {
     document.body.classList.add("auth-page")
     return () => document.body.classList.remove("auth-page")
   }, [])
-
-  useEffect(() => {
-    if (user) {
-      navigate("/dashboard", { replace: true })
-    } else {
-      setGuardLoading(false)
-    }
-  }, [user, navigate])
 
   function resetForgotPassword() {
     setShowModal(false)
@@ -127,7 +118,6 @@ export default function Login() {
         email = generateEmail(email)
       }
       await signInWithEmailAndPassword(auth, email, loginPass)
-      navigate("/dashboard", { replace: true })
     } catch (err: any) {
       switch (err.code) {
         case "auth/invalid-credential":
@@ -144,13 +134,30 @@ export default function Login() {
     }
   }
 
-  if (guardLoading) {
+  if (authLoading) {
     return (
       <div className="authGuardLoader">
         <div className="spinner" />
         <p>Authenticating Command...</p>
       </div>
     )
+  }
+
+  if (user) {
+    if (profile) {
+      if (isAdmin) return <Navigate to="/admin" replace />;
+      return <Navigate to="/dashboard" replace />;
+    }
+    if (profileLoading) {
+      return (
+        <div className="authGuardLoader">
+          <div className="spinner" />
+          <p>Loading your profile...</p>
+        </div>
+      )
+    }
+    if (isAdmin) return <Navigate to="/admin" replace />;
+    return <Navigate to="/signup" replace />;
   }
 
   return (

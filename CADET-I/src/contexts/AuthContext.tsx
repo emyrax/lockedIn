@@ -12,6 +12,7 @@ interface AuthContextType {
   user: User | null;
   profile: OfficerUser | null;
   loading: boolean;
+  profileLoading: boolean;
   isAdmin: boolean;
   isMediaAdmin: boolean;
   login: (email: string, password: string) => Promise<void>;
@@ -20,7 +21,7 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType>({
-  user: null, profile: null, loading: true, isAdmin: false, isMediaAdmin: false,
+  user: null, profile: null, loading: true, profileLoading: true, isAdmin: false, isMediaAdmin: false,
   login: async () => {},
   loginWithGoogle: async () => {},
   logout: async () => {},
@@ -30,23 +31,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<OfficerUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const [profileLoading, setProfileLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isMediaAdmin, setIsMediaAdmin] = useState(false);
   const idleRef = useRef<number>();
-  const activityRef = useRef<number>();
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (u) => {
       setUser(u);
+      setLoading(false);
       if (u) {
+        setProfileLoading(true);
         sessionStorage.setItem("cadeti_session_started_at", String(Date.now()));
         updateActivity();
         try {
           const snap = await getDoc(doc(db, "users", u.uid));
-          if (snap.exists()) {
-            const data = snap.data() as OfficerUser;
-            setProfile(data);
-          }
+          if (snap.exists()) setProfile(snap.data() as OfficerUser);
           const adminRef = doc(db, "admins", u.uid);
           const adminSnap = await getDoc(adminRef);
           if (adminSnap.exists()) {
@@ -66,15 +66,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             }
             setIsMediaAdmin(false);
           }
-        } catch { /* ignore */ }
+        } catch (err) { console.error("Auth check error:", err); }
+        setProfileLoading(false);
       } else {
         setProfile(null);
         setIsAdmin(false);
         setIsMediaAdmin(false);
+        setProfileLoading(false);
         sessionStorage.removeItem("cadeti_session_started_at");
         sessionStorage.removeItem("cadeti_session_last_activity_at");
       }
-      setLoading(false);
     });
     const events = ["click", "keydown", "mousemove", "scroll", "touchstart"];
     const handler = () => updateActivity();
@@ -104,9 +105,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   function forceLogout(reason: string) {
     signOut(auth).catch(() => {});
-    alert(reason === "idle"
-      ? "Your session expired due to inactivity. Please sign in again."
-      : "Your secure session expired. Please sign in again.");
+    console.warn(reason === "idle"
+      ? "Session expired due to inactivity."
+      : "Max session duration reached.");
     window.location.replace("/login");
   }
 
@@ -119,13 +120,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   async function login(email: string, password: string) {
     await signInWithEmailAndPassword(auth, email, password);
-    sessionStorage.setItem("auth_session", "active");
   }
 
   async function loginWithGoogle() {
     const provider = new GoogleAuthProvider();
     await signInWithPopup(auth, provider);
-    sessionStorage.setItem("auth_session", "active");
   }
 
   async function logout() {
@@ -135,7 +134,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, profile, loading, isAdmin, isMediaAdmin, login, loginWithGoogle, logout }}>
+    <AuthContext.Provider value={{ user, profile, loading, profileLoading, isAdmin, isMediaAdmin, login, loginWithGoogle, logout }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { Link, useNavigate } from "react-router-dom"
-import { createUserWithEmailAndPassword } from "firebase/auth"
+import { createUserWithEmailAndPassword, sendEmailVerification } from "firebase/auth"
 import { doc, setDoc, serverTimestamp } from "firebase/firestore"
 import { auth, db, GOOGLE_SHEETS_API, generateEmail } from "../config/firebase"
 import { useAuth } from "../contexts/AuthContext"
@@ -50,7 +50,7 @@ async function uploadToCloudinary(file: File): Promise<string> {
 
 export default function Signup() {
   const navigate = useNavigate()
-  const { user } = useAuth()
+  const { user, profile } = useAuth()
 
   const [step, setStep] = useState(1)
 
@@ -93,17 +93,22 @@ export default function Signup() {
   const [messageType, setMessageType] = useState<"error" | "success" | "">("")
   const [loading, setLoading] = useState(false)
   const [areas, setAreas] = useState<string[]>([])
+  const objectUrls = useRef<string[]>([])
 
   useEffect(() => {
     document.body.classList.add("auth-page")
-    return () => document.body.classList.remove("auth-page")
+    return () => {
+      document.body.classList.remove("auth-page")
+      objectUrls.current.forEach((url) => URL.revokeObjectURL(url))
+      objectUrls.current = []
+    }
   }, [])
 
   useEffect(() => {
-    if (user) {
+    if (user && profile) {
       navigate("/dashboard", { replace: true })
     }
-  }, [user, navigate])
+  }, [user, profile, navigate])
 
   useEffect(() => {
     if (state) {
@@ -121,61 +126,37 @@ export default function Signup() {
   const handlePassportChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
+      if (passportPreview) URL.revokeObjectURL(passportPreview)
+      const url = URL.createObjectURL(file)
       setPassportFile(file)
-      setPassportPreview(URL.createObjectURL(file))
+      setPassportPreview(url)
+      objectUrls.current.push(url)
     }
-  }, [])
+  }, [passportPreview])
 
   const handleSignatureChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
+      if (signaturePreview) URL.revokeObjectURL(signaturePreview)
+      const url = URL.createObjectURL(file)
       setSignatureFile(file)
-      setSignaturePreview(URL.createObjectURL(file))
+      setSignaturePreview(url)
+      objectUrls.current.push(url)
     }
-  }, [])
+  }, [signaturePreview])
 
-  async function handleVerify(e: React.FormEvent) {
+  function handleStep1Submit(e: React.FormEvent) {
     e.preventDefault()
     setMessage("")
     setMessageType("")
 
     if (!serviceNumber.trim()) {
-      setMessage("Enter your official Service Number.")
+      setMessage("Official Service Number is required.")
       setMessageType("error")
       return
     }
 
-    setLoading(true)
-    try {
-      const res = await fetch(
-        `${GOOGLE_SHEETS_API}?action=searchByServiceNumber&serviceNumber=${encodeURIComponent(serviceNumber.trim())}`
-      )
-      const data = await res.json()
-
-      if (!data.found) {
-        setMessage("Service Number not found in personnel records. Verify and try again.")
-        setMessageType("error")
-        setLoading(false)
-        return
-      }
-
-      setFirstName(data.firstName || data.name?.split(" ")[0] || "")
-      setSurname(data.surname || data.name?.split(" ").slice(1).join(" ") || "")
-      setPhone(data.phone || "")
-      setEmail(data.email || "")
-      setRank(data.rank || "")
-      setState(data.state || "")
-      setArea(data.area || "")
-
-      setStep(2)
-      setMessage("")
-      setMessageType("")
-    } catch {
-      setMessage("Unable to verify record. Check connection.")
-      setMessageType("error")
-    } finally {
-      setLoading(false)
-    }
+    setStep(2)
   }
 
   function handleStep2Submit(e: React.FormEvent) {
@@ -243,36 +224,42 @@ export default function Signup() {
       const generatedEmail = generateEmail(serviceNumber.trim())
       const userCred = await createUserWithEmailAndPassword(auth, generatedEmail, password)
       const uid = userCred.user.uid
+      sendEmailVerification(userCred.user).catch(console.warn)
 
-      await setDoc(doc(db, "users", uid), {
-        serviceNumber: serviceNumber.trim(),
-        firstName: firstName.trim(),
-        surname: surname.trim(),
-        otherName: otherName.trim(),
-        phone: phone.trim(),
-        email: email.trim() || generatedEmail,
-        gender,
-        dateOfBirth,
-        bloodGroup,
-        maritalStatus,
-        rank: rank.trim() || "Member",
-        state,
-        area,
-        lga: lga.trim(),
-        address: address.trim(),
-        department,
-        occupation: occupation.trim(),
-        employer: employer.trim(),
-        education,
-        nokName: nokName.trim(),
-        nokRelation: nokRelation.trim(),
-        nokPhone: nokPhone.trim(),
-        nokAddress: nokAddress.trim(),
-        passportUrl,
-        signatureUrl,
-        role: "officer",
-        activatedAt: serverTimestamp(),
-      })
+      try {
+        await setDoc(doc(db, "users", uid), {
+          serviceNumber: serviceNumber.trim(),
+          firstName: firstName.trim(),
+          surname: surname.trim(),
+          otherName: otherName.trim(),
+          phone: phone.trim(),
+          email: email.trim() || generatedEmail,
+          gender,
+          dateOfBirth,
+          bloodGroup,
+          maritalStatus,
+          rank: rank.trim() || "Member",
+          state,
+          area,
+          lga: lga.trim(),
+          address: address.trim(),
+          department,
+          occupation: occupation.trim(),
+          employer: employer.trim(),
+          education,
+          nokName: nokName.trim(),
+          nokRelation: nokRelation.trim(),
+          nokPhone: nokPhone.trim(),
+          nokAddress: nokAddress.trim(),
+          passportUrl,
+          signatureUrl,
+          role: "officer",
+          activatedAt: serverTimestamp(),
+        })
+      } catch {
+        await userCred.user.delete().catch(console.warn)
+        throw new Error("Profile could not be created. Please try again.")
+      }
 
       setMessage("Portal activated successfully! Redirecting to Command Dashboard...")
       setMessageType("success")
@@ -309,7 +296,7 @@ export default function Signup() {
           <div className="step-indicator">
             <div className={`step-dot ${step >= 1 ? "active" : ""}`}>
               <span>1</span>
-              <label>Verify</label>
+              <label>Service No</label>
             </div>
             <div className={`step-line ${step >= 2 ? "active" : ""}`} />
             <div className={`step-dot ${step >= 2 ? "active" : ""}`}>
@@ -324,21 +311,26 @@ export default function Signup() {
           </div>
 
           {step === 1 && (
-            <form onSubmit={handleVerify}>
+            <form onSubmit={handleStep1Submit}>
+              <div className="form-section-header">
+                <i className="fas fa-id-card" />
+                <span>Service Details</span>
+              </div>
+
               <div className="input-group">
                 <i className="fas fa-id-card input-icon" />
                 <input
                   type="text"
-                  placeholder="Official Service Number (CAD/...)"
+                  required
+                  placeholder="Official Service Number * (e.g. CAD/01/234/XX)"
                   value={serviceNumber}
                   onChange={(e) => setServiceNumber(e.target.value)}
                   disabled={loading}
                 />
               </div>
-              <span className="input-hint">Must match your assigned Service Number exactly.</span>
 
               <button type="submit" id="signupBtn" className={loading ? "loading" : ""} disabled={loading}>
-                <span className="btn-text">Verify Service Number</span>
+                <span className="btn-text">Continue</span>
                 <span className="spinner" />
               </button>
 
@@ -348,6 +340,12 @@ export default function Signup() {
                   {message}
                 </div>
               )}
+
+              <div className="auth-footer" style={{ marginTop: 20 }}>
+                <p>
+                  Already activated? <Link to="/login">Access Portal</Link>
+                </p>
+              </div>
             </form>
           )}
 
@@ -533,7 +531,7 @@ export default function Signup() {
                   Already activated? <Link to="/login">Access Portal</Link>
                 </p>
                 <button className="link-btn" onClick={() => { setStep(1); setMessage(""); setMessageType("") }} style={{ marginTop: 8 }}>
-                  &larr; Back to verification
+                  &larr; Back to Service Number
                 </button>
               </div>
             </form>
@@ -651,7 +649,7 @@ export default function Signup() {
                   Already activated? <Link to="/login">Access Portal</Link>
                 </p>
                 <button className="link-btn" onClick={() => { setStep(2); setMessage(""); setMessageType("") }} style={{ marginTop: 8 }}>
-                  &larr; Back to profile
+                  &larr; Back to Profile
                 </button>
               </div>
             </form>

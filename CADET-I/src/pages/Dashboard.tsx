@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, Navigate } from "react-router-dom";
 import { collection, query, where, orderBy, getDocs } from "firebase/firestore";
 import { db, auth, GOOGLE_SHEETS_API } from "../config/firebase";
 import { useAuth } from "../contexts/AuthContext";
@@ -19,8 +19,17 @@ interface Course {
   name: string;
 }
 
+function calculateAge(dob: string): number {
+  const birth = new Date(dob);
+  const today = new Date();
+  let age = today.getFullYear() - birth.getFullYear();
+  const m = today.getMonth() - birth.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+  return age;
+}
+
 export default function Dashboard() {
-  const { user: currentUser, profile: userProfile, isAdmin, loading, logout } = useAuth();
+  const { user: currentUser, profile: userProfile, isAdmin, loading, profileLoading, logout } = useAuth();
   const navigate = useNavigate();
 
   const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
@@ -82,12 +91,30 @@ export default function Dashboard() {
     return () => { cancelled = true; };
   }, [userProfile]);
 
-  if (!userProfile) {
+  if (profileLoading) {
     return (
       <main className="portal-shell">
         <div className="portal-loading">
           <div className="spinner" />
           <p>Loading your portal...</p>
+        </div>
+      </main>
+    );
+  }
+
+  if (!userProfile) {
+    if (isAdmin) {
+      return <Navigate to="/admin" replace />;
+    }
+    return (
+      <main className="portal-shell">
+        <div className="portal-loading">
+          <i className="fas fa-user-clock" style={{ fontSize: 48, color: "#d4a017", marginBottom: 16 }} />
+          <h2 style={{ color: "#333", marginBottom: 8 }}>Profile Not Found</h2>
+          <p>Your officer profile has not been set up yet. Please complete your portal activation to access the dashboard.</p>
+          <Link to="/signup" className="action-btn" style={{ marginTop: 16, display: "inline-block" }}>
+            Continue Setup
+          </Link>
         </div>
       </main>
     );
@@ -125,7 +152,7 @@ export default function Dashboard() {
               <span>Results</span>
             </div>
             <div className="stat-card">
-              <span className="stat-number">{userProfile?.age || "\u2014"}</span>
+              <span className="stat-number">{userProfile?.dateOfBirth ? calculateAge(userProfile.dateOfBirth) : "\u2014"}</span>
               <span>Age</span>
             </div>
           </div>
@@ -149,7 +176,7 @@ export default function Dashboard() {
                 <p className="profile-rank">{userProfile?.rank || "Member"}</p>
                 <div className="profile-details">
                   <div><strong>Service No:</strong> {escapeHtml(userProfile?.serviceNumber)}</div>
-                  <div><strong>State:</strong> {escapeHtml(userProfile?.stateOfOrigin)}</div>
+                  <div><strong>State:</strong> {escapeHtml(userProfile?.state)}</div>
                   <div><strong>Area:</strong> {escapeHtml(userProfile?.area)}</div>
                   <div><strong>Department:</strong> {escapeHtml(userProfile?.department)}</div>
                 </div>
