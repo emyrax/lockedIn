@@ -1,12 +1,12 @@
 Admin Flow
-/admin/login
+/admin
      │
      ├── Email/password login OR Google OAuth
      │
      └── → /admin (Admin panel, tabs)
-            │
-            ├── Officers tab — list all Firestore users, search by name/svc no
-            ├── Enrollments tab — all course enrollments, status management
+            │____ assign role like or manager with permissions.
+            ├── Officers management (CRUD) tab — list all Firestore users, search by name/svc no , GET ID LINK AND QR CODE  FOR ID CARD
+            ├── Enrollments management (CRUD)tab — all course enrollments, status management
             ├── Messages tab — contact form submissions from Firestore
             └── Courses tab — CRUD courses
                   │
