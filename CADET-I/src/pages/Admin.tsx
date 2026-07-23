@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {
   collection, query, orderBy, getDocs, getDoc, setDoc, addDoc,
   updateDoc, deleteDoc, doc, Timestamp, where
@@ -450,7 +450,9 @@ export default function Admin() {
           <div>
             <h1>Access Denied</h1>
             <p>You do not have administrative privileges.</p>
-            <Link to="/dashboard">Return to Dashboard</Link>
+            <button onClick={async () => { await logout(); navigate("/"); }} style={{ background: "none", border: "none", color: "var(--cmd-green)", cursor: "pointer", textDecoration: "underline", fontSize: "inherit", padding: 0 }}>
+              Return to Home
+            </button>
           </div>
         </section>
       </main>
