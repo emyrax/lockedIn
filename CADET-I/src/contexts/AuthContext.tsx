@@ -68,16 +68,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setIsMediaAdmin(String(adminData.role || adminData.Role || "").toLowerCase().includes("media"));
           } else {
             if (u.email === "ekwuemesat@gmail.com") {
-              await setDoc(adminRef, {
+              setIsAdmin(true);
+              setIsMediaAdmin(false);
+              setDoc(adminRef, {
                 email: "ekwuemesat@gmail.com",
                 role: "super-admin",
                 createdAt: serverTimestamp(),
-              });
-              setIsAdmin(true);
+              }).catch(err => console.error("Failed to create admin doc:", err));
             } else {
               setIsAdmin(false);
+              setIsMediaAdmin(false);
             }
-            setIsMediaAdmin(false);
           }
         } catch (err) { console.error("Auth check error:", err); }
         setProfileLoading(false);
