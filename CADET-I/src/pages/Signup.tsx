@@ -169,6 +169,39 @@ export default function Signup() {
     }
   }, [signaturePreview])
 
+  const handleCropConfirm = useCallback(async () => {
+    if (!completedCrop || !cropImgRef.current) return
+    const image = cropImgRef.current
+    const scaleX = image.naturalWidth / image.width
+    const scaleY = image.naturalHeight / image.height
+    const canvas = document.createElement("canvas")
+    canvas.width = completedCrop.width * scaleX
+    canvas.height = completedCrop.height * scaleY
+    const ctx = canvas.getContext("2d")!
+    ctx.drawImage(
+      image,
+      completedCrop.x * scaleX,
+      completedCrop.y * scaleY,
+      completedCrop.width * scaleX,
+      completedCrop.height * scaleY,
+      0, 0,
+      canvas.width, canvas.height
+    )
+    const blob = await new Promise<Blob>(resolve => canvas.toBlob(b => resolve(b!), "image/jpeg", 0.95))
+    const croppedFile = new File([blob], "passport.jpg", { type: "image/jpeg" })
+    setPassportFile(croppedFile)
+    setPassportPreview(URL.createObjectURL(croppedFile))
+    setCropSrc("")
+    setCrop(undefined)
+    setCompletedCrop(undefined)
+  }, [completedCrop])
+
+  const handleCropCancel = useCallback(() => {
+    setCropSrc("")
+    setCrop(undefined)
+    setCompletedCrop(undefined)
+  }, [])
+
   const SN_REGEX = /^cad\/enu\/nsk\/\d{4}\/\d{3}$/i
 
   async function handleStep1Submit(e: React.FormEvent) {
@@ -258,6 +291,12 @@ export default function Signup() {
       return
     }
 
+    if (!passportFile) {
+      setMessage("Passport photograph is required.")
+      setMessageType("error")
+      return
+    }
+
     setLoading(true)
     try {
       let passportUrl = ""
@@ -335,6 +374,7 @@ export default function Signup() {
   }
 
   return (
+    <>
     <div className="overlay">
       <div className="form-section">
         <div className="form-container" style={{ maxWidth: 620 }}>
@@ -706,5 +746,34 @@ export default function Signup() {
         </div>
       </div>
     </div>
+
+      {cropSrc && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.6)", padding: 20 }}>
+          <div style={{ background: "#fff", borderRadius: 12, padding: 24, maxWidth: 520, width: "100%", textAlign: "center" }}>
+            <h3 style={{ margin: "0 0 16px", fontSize: 18 }}>Crop Passport Photo</h3>
+            <p style={{ fontSize: 13, color: "#666", marginBottom: 12 }}>Adjust the crop area to 1:1 square, then confirm.</p>
+            <div style={{ maxHeight: "55vh", overflow: "hidden", borderRadius: 8 }}>
+              <ReactCrop
+                crop={crop}
+                onChange={c => setCrop(c)}
+                onComplete={c => setCompletedCrop(c)}
+                aspect={1}
+                minWidth={100}
+              >
+                <img ref={cropImgRef} src={cropSrc} style={{ maxHeight: "50vh", width: "100%", objectFit: "contain" }} alt="Crop" />
+              </ReactCrop>
+            </div>
+            <div style={{ display: "flex", gap: 10, marginTop: 16, justifyContent: "center" }}>
+              <button type="button" style={{ padding: "10px 24px", background: "#078f3b", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, cursor: "pointer", fontSize: 14 }} onClick={handleCropConfirm}>
+                Crop & Confirm
+              </button>
+              <button type="button" style={{ padding: "10px 24px", background: "#888", color: "#fff", border: "none", borderRadius: 8, fontWeight: 600, cursor: "pointer", fontSize: 14 }} onClick={handleCropCancel}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   )
 }
