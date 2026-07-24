@@ -55,6 +55,10 @@ export interface OfficerUser {
   nokRelation?: string;
   nokPhone?: string;
   nokAddress?: string;
+  stateOfOrigin?: string;
+  faculty?: string;
+  universityDept?: string;
+  universityLevel?: string;
   passportUrl?: string;
   signatureUrl?: string;
   pdfUrl?: string;

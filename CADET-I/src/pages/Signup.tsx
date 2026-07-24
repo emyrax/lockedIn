@@ -77,6 +77,7 @@ export default function Signup() {
   const [bloodGroup, setBloodGroup] = useState("")
   const [maritalStatus, setMaritalStatus] = useState("")
   const [state, setState] = useState("")
+  const [stateOfOrigin, setStateOfOrigin] = useState("")
   const [area, setArea] = useState("")
   const [lga, setLga] = useState("")
   const [address, setAddress] = useState("")
@@ -85,6 +86,9 @@ export default function Signup() {
   const [occupation, setOccupation] = useState("")
   const [employer, setEmployer] = useState("")
   const [education, setEducation] = useState("")
+  const [faculty, setFaculty] = useState("")
+  const [universityDept, setUniversityDept] = useState("")
+  const [universityLevel, setUniversityLevel] = useState("")
 
   const [nokName, setNokName] = useState("")
   const [nokRelation, setNokRelation] = useState("")
@@ -267,6 +271,16 @@ export default function Signup() {
       setMessageType("error")
       return
     }
+    if (!stateOfOrigin) {
+      setMessage("Please select your state of origin.")
+      setMessageType("error")
+      return
+    }
+    if (!lga.trim()) {
+      setMessage("LGA is required.")
+      setMessageType("error")
+      return
+    }
     if (!department) {
       setMessage("Please select your department.")
       setMessageType("error")
@@ -344,6 +358,7 @@ export default function Signup() {
           maritalStatus,
           rank: rank.trim(),
           state,
+          stateOfOrigin,
           area,
           lga: lga.trim(),
           address: address.trim(),
@@ -351,6 +366,9 @@ export default function Signup() {
           occupation: occupation.trim(),
           employer: employer.trim(),
           education,
+          faculty: faculty.trim(),
+          universityDept: universityDept.trim(),
+          universityLevel,
           nokName: nokName.trim(),
           nokRelation: nokRelation.trim(),
           nokPhone: nokPhone.trim(),
@@ -573,23 +591,65 @@ export default function Signup() {
                 </div>
               </div>
 
-              <div className="grid">
-                <div className="input-group" style={{ flex: 1 }}>
-                  <i className="fas fa-city input-icon" />
-                  <input placeholder="LGA (Local Government Area)" value={lga} onChange={(e) => setLga(e.target.value)} disabled={loading} />
-                </div>
-                <div className="input-group" style={{ flex: 1 }}>
-                  <i className="fas fa-building input-icon" />
-                  <select required value={department} onChange={(e) => setDepartment(e.target.value)} disabled={loading}>
-                    <option value="">Select Department *</option>
-                    {DEPARTMENTS.map((d) => <option key={d} value={d}>{d}</option>)}
-                  </select>
-                </div>
+              <div className="input-group" style={{ flex: 1 }}>
+                <i className="fas fa-building input-icon" />
+                <select required value={department} onChange={(e) => setDepartment(e.target.value)} disabled={loading}>
+                  <option value="">Select Department *</option>
+                  {DEPARTMENTS.map((d) => <option key={d} value={d}>{d}</option>)}
+                </select>
               </div>
 
               <div className="input-group">
                 <i className="fas fa-home input-icon" />
                 <input placeholder="Contact Address" value={address} onChange={(e) => setAddress(e.target.value)} disabled={loading} />
+              </div>
+
+              <div className="form-section-header" style={{ marginTop: 24 }}>
+                <i className="fas fa-map-pin" />
+                <span>Home Details</span>
+              </div>
+
+              <div className="grid">
+                <div className="input-group" style={{ flex: 1 }}>
+                  <i className="fas fa-map-marker-alt input-icon" />
+                  <select required value={stateOfOrigin} onChange={(e) => setStateOfOrigin(e.target.value)} disabled={loading}>
+                    <option value="">Select State of Origin *</option>
+                    {NIGERIA_STATES.map((s) => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </div>
+                <div className="input-group" style={{ flex: 1 }}>
+                  <i className="fas fa-city input-icon" />
+                  <input required placeholder="LGA (Local Government Area) *" value={lga} onChange={(e) => setLga(e.target.value)} disabled={loading} />
+                </div>
+              </div>
+
+              <div className="form-section-header" style={{ marginTop: 24 }}>
+                <i className="fas fa-university" />
+                <span>University Details (Optional)</span>
+              </div>
+
+              <div className="grid">
+                <div className="input-group" style={{ flex: 1 }}>
+                  <i className="fas fa-book input-icon" />
+                  <input placeholder="Faculty" value={faculty} onChange={(e) => setFaculty(e.target.value)} disabled={loading} />
+                </div>
+                <div className="input-group" style={{ flex: 1 }}>
+                  <i className="fas fa-book-open input-icon" />
+                  <input placeholder="Department" value={universityDept} onChange={(e) => setUniversityDept(e.target.value)} disabled={loading} />
+                </div>
+              </div>
+
+              <div className="input-group">
+                <i className="fas fa-layer-group input-icon" />
+                <select value={universityLevel} onChange={(e) => setUniversityLevel(e.target.value)} disabled={loading}>
+                  <option value="">Level</option>
+                  <option value="100">100</option>
+                  <option value="200">200</option>
+                  <option value="300">300</option>
+                  <option value="400">400</option>
+                  <option value="500">500</option>
+                  <option value="600">600</option>
+                </select>
               </div>
 
               <div className="form-section-header" style={{ marginTop: 24 }}>

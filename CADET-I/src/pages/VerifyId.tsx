@@ -133,12 +133,7 @@ function OfficerProfile({ officer, courses, serviceNumber }: { officer: any; cou
             <InfoBlock label="Education" value={officer.education} />
           </ProfileSection>
 
-          <ProfileSection title="Next of Kin">
-            <InfoBlock label="Name" value={officer.nokName} />
-            <InfoBlock label="Relation" value={officer.nokRelation} />
-            <InfoBlock label="Phone" value={officer.nokPhone} />
-            <InfoBlock label="Address" value={officer.nokAddress} />
-          </ProfileSection>
+
 
           {(officer.bloodGroup || officer.genotype || officer.allergies || officer.medicalConditions || officer.emergencyPhone) && (
             <div className="v-section v-section-emergency">

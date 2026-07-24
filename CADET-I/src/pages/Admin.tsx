@@ -187,7 +187,7 @@ export default function Admin() {
 
   function handleOpenEdit(o: any) {
     const fields: Record<string, string> = {};
-    const map = ["firstName","surname","otherName","gender","dateOfBirth","bloodGroup","genotype","allergies","medicalConditions","emergencyPhone","maritalStatus","phone","email","address","serviceNumber","rank","department","postHeld","appointment","state","area","zone","commander","lga","occupation","employer","education","nokName","nokRelation","nokPhone","nokAddress","passportUrl","signatureUrl"];
+    const map = ["firstName","surname","otherName","gender","dateOfBirth","bloodGroup","genotype","allergies","medicalConditions","emergencyPhone","maritalStatus","phone","email","address","serviceNumber","rank","department","postHeld","appointment","state","stateOfOrigin","area","zone","commander","lga","occupation","employer","education","nokName","nokRelation","nokPhone","nokAddress","faculty","universityDept","universityLevel","passportUrl","signatureUrl"];
     map.forEach(k => fields[k] = o[k] || "");
     setEditForm(fields);
     setEditOfficer(o);
@@ -1143,8 +1143,12 @@ export default function Admin() {
                   <input required value={addForm.state || ""} onChange={e => setAddForm(p => ({ ...p, state: e.target.value }))} />
                 </div>
                 <div className="input-group-modal">
-                  <label>LGA</label>
-                  <input value={addForm.lga || ""} onChange={e => setAddForm(p => ({ ...p, lga: e.target.value }))} />
+                  <label>State of Origin *</label>
+                  <input required value={addForm.stateOfOrigin || ""} onChange={e => setAddForm(p => ({ ...p, stateOfOrigin: e.target.value }))} />
+                </div>
+                <div className="input-group-modal">
+                  <label>LGA *</label>
+                  <input required value={addForm.lga || ""} onChange={e => setAddForm(p => ({ ...p, lga: e.target.value }))} />
                 </div>
                 <div className="input-group-modal">
                   <label>Occupation</label>
@@ -1153,6 +1157,18 @@ export default function Admin() {
                 <div className="input-group-modal">
                   <label>Employer</label>
                   <input value={addForm.employer || ""} onChange={e => setAddForm(p => ({ ...p, employer: e.target.value }))} />
+                </div>
+                <div className="input-group-modal">
+                  <label>Faculty</label>
+                  <input value={addForm.faculty || ""} onChange={e => setAddForm(p => ({ ...p, faculty: e.target.value }))} />
+                </div>
+                <div className="input-group-modal">
+                  <label>Uni. Dept</label>
+                  <input value={addForm.universityDept || ""} onChange={e => setAddForm(p => ({ ...p, universityDept: e.target.value }))} />
+                </div>
+                <div className="input-group-modal">
+                  <label>Uni. Level</label>
+                  <input value={addForm.universityLevel || ""} onChange={e => setAddForm(p => ({ ...p, universityLevel: e.target.value }))} />
                 </div>
                 <div className="input-group-modal" style={{ gridColumn: "1 / -1" }}>
                   <label>Address</label>
@@ -1287,8 +1303,12 @@ export default function Admin() {
                   <input required value={editForm.state || ""} onChange={e => setEditForm(p => ({ ...p, state: e.target.value }))} />
                 </div>
                 <div className="input-group-modal">
-                  <label>LGA</label>
-                  <input value={editForm.lga || ""} onChange={e => setEditForm(p => ({ ...p, lga: e.target.value }))} />
+                  <label>State of Origin *</label>
+                  <input required value={editForm.stateOfOrigin || ""} onChange={e => setEditForm(p => ({ ...p, stateOfOrigin: e.target.value }))} />
+                </div>
+                <div className="input-group-modal">
+                  <label>LGA *</label>
+                  <input required value={editForm.lga || ""} onChange={e => setEditForm(p => ({ ...p, lga: e.target.value }))} />
                 </div>
                 <div className="input-group-modal">
                   <label>Occupation</label>
@@ -1297,6 +1317,18 @@ export default function Admin() {
                 <div className="input-group-modal">
                   <label>Employer</label>
                   <input value={editForm.employer || ""} onChange={e => setEditForm(p => ({ ...p, employer: e.target.value }))} />
+                </div>
+                <div className="input-group-modal">
+                  <label>Faculty</label>
+                  <input value={editForm.faculty || ""} onChange={e => setEditForm(p => ({ ...p, faculty: e.target.value }))} />
+                </div>
+                <div className="input-group-modal">
+                  <label>Uni. Dept</label>
+                  <input value={editForm.universityDept || ""} onChange={e => setEditForm(p => ({ ...p, universityDept: e.target.value }))} />
+                </div>
+                <div className="input-group-modal">
+                  <label>Uni. Level</label>
+                  <input value={editForm.universityLevel || ""} onChange={e => setEditForm(p => ({ ...p, universityLevel: e.target.value }))} />
                 </div>
                 <div className="input-group-modal">
                   <label>Education</label>
