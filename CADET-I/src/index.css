@@ -1031,3 +1031,49 @@ body { color: #101510; background: radial-gradient(circle at 0 0, #078f3b2e, tra
 .comment-input-area input, .comment-input-area textarea { width: 100%; font-family: inherit; border: 1px solid #0000001f; padding: 14px; }
 .comment-input-area textarea { resize: vertical; min-height: 110px; }
 .comment-input-area button { background: var(--primary-green); color: #fff; cursor: pointer; border: none; padding: 13px 22px; font-weight: 800; justify-self: start; }
+
+/* ===== BADGES ==== */
+.badge { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+.badge-active { background: #e8f5e9; color: #0d7a28; border: 1px solid #a5d6a7; }
+.badge-completed { background: #e3f2fd; color: #0369a1; border: 1px solid #90caf9; }
+.badge-pending { background: #fff8e1; color: #b8860b; border: 1px solid #ffe082; }
+.badge-default { background: #f5f5f5; color: #666; border: 1px solid #ddd; }
+
+/* ===== DASHBOARD ENROLLMENTS ==== */
+.enrollments-list { display: grid; gap: 10px; }
+.enrollment-item { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px; background: #f8fbf8; border: 1px solid #002b0514; border-radius: 14px; }
+.enrollment-info { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.enrollment-course { font-weight: 600; color: #002b05; font-size: 0.9rem; }
+.enrollment-date { color: #6a7b6c; font-size: 0.8rem; white-space: nowrap; }
+
+/* ===== DASHBOARD ACTIVITY ==== */
+.activity-timeline { display: grid; gap: 8px; }
+.activity-item { display: flex; gap: 12px; padding: 12px 14px; background: #f8fbf8; border: 1px solid #002b0514; border-radius: 14px; }
+.activity-icon { color: #0d7a28; font-size: 0.75rem; flex-shrink: 0; margin-top: 3px; }
+.activity-content { display: grid; gap: 4px; min-width: 0; }
+.activity-text { color: #002b05; font-size: 0.88rem; }
+.activity-time { color: #6a7b6c; font-size: 0.78rem; }
+
+/* ===== DASHBOARD QUICK ACTIONS ==== */
+.quick-actions { display: grid; gap: 8px; }
+.action-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 18px; background: linear-gradient(135deg, #002b05, #0d7a28); color: #fff; border-radius: 12px; font-size: 0.85rem; font-weight: 600; text-decoration: none; cursor: pointer; border: 0; transition: transform 0.2s, box-shadow 0.2s; }
+.action-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px #002b0540; }
+
+/* ===== DASHBOARD MESSAGES ==== */
+.messages-list { display: grid; gap: 8px; }
+.message-item { padding: 14px; background: #f8fbf8; border: 1px solid #002b0514; border-radius: 14px; position: relative; }
+.message-item.unread { background: #ecfdf5; border-color: #0d7a2840; }
+.message-subject { font-weight: 600; color: #002b05; font-size: 0.9rem; display: flex; align-items: center; gap: 8px; }
+.msg-dot { width: 8px; height: 8px; border-radius: 50%; background: #0d7a28; flex-shrink: 0; }
+.message-preview { color: #5f6d61; font-size: 0.84rem; margin: 6px 0 4px; }
+.message-date { color: #6a7b6c; font-size: 0.78rem; }
+.msg-badge { display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px; background: #c00; color: #fff; font-size: 0.72rem; font-weight: 700; vertical-align: middle; }
+
+/* ===== DASHBOARD PROFILE DETAILS ==== */
+.details-list { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.detail-item { padding: 10px 14px; background: #f8fbf8; border: 1px solid #002b0514; border-radius: 12px; font-size: 0.88rem; color: #333; }
+.detail-item strong { color: #002b05; display: block; margin-bottom: 2px; font-size: 0.82rem; }
+
+@media (max-width: 768px) {
+  .details-list { grid-template-columns: 1fr; }
+}

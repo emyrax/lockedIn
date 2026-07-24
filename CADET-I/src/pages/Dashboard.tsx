@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { Link, useNavigate, Navigate } from "react-router-dom";
 import { collection, query, where, orderBy, getDocs } from "firebase/firestore";
-import { db, auth, GOOGLE_SHEETS_API } from "../config/firebase";
+import { db, auth } from "../config/firebase";
 import { useAuth } from "../contexts/AuthContext";
 import { escapeHtml, formatDate, truncate, getGoogleDriveUrl, RANKS, DEPARTMENTS, APPOINTMENTS } from "../utils";
 
@@ -17,6 +17,14 @@ interface Enrollment {
 interface Course {
   id: string;
   name: string;
+}
+
+interface ContactMessage {
+  id: string;
+  subject: string;
+  message: string;
+  createdAt: { toDate: () => Date } | null;
+  read: boolean;
 }
 
 function calculateAge(dob: string): number {
@@ -35,11 +43,16 @@ export default function Dashboard() {
   const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
   const [courses, setCourses] = useState<Record<string, string>>({});
   const [fetching, setFetching] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [messages, setMessages] = useState<ContactMessage[]>([]);
+  const [activeSection, setActiveSection] = useState("dashboard");
 
   const handleLogout = useCallback(async () => {
     await logout();
     navigate("/login");
   }, [logout, navigate]);
+
+  const closeSidebar = useCallback(() => setSidebarOpen(false), []);
 
   useEffect(() => {
     if (!userProfile) return;
@@ -87,7 +100,24 @@ export default function Dashboard() {
       }
     };
 
+    const fetchMessages = async () => {
+      try {
+        const q = query(
+          collection(db, "contact_messages"),
+          where("serviceNumber", "==", userProfile.serviceNumber),
+          orderBy("createdAt", "desc")
+        );
+        const snap = await getDocs(q);
+        if (!cancelled) {
+          setMessages(snap.docs.map((d) => ({ id: d.id, ...d.data() } as ContactMessage)));
+        }
+      } catch {
+        // contact_messages may not exist yet
+      }
+    };
+
     fetchData();
+    fetchMessages();
     return () => { cancelled = true; };
   }, [userProfile]);
 
@@ -121,6 +151,7 @@ export default function Dashboard() {
   }
 
   const pendingResults = enrollments.filter((e) => e.status !== "completed").length;
+  const unreadMessages = messages.filter((m) => !m.read).length;
 
   const getStatusBadge = (status: string) => {
     const base = "badge badge-";
@@ -132,58 +163,86 @@ export default function Dashboard() {
     }
   };
 
+  const navItems = [
+    { id: "dashboard", label: "Dashboard", icon: "fa-chart-pie" },
+    { id: "courses", label: "Courses", icon: "fa-book", link: "/events" },
+    { id: "idcard", label: "My ID Card", icon: "fa-id-card", link: `/verify?id=${userProfile?.serviceNumber}` },
+    { id: "publications", label: "Publications", icon: "fa-newspaper", link: "/publications" },
+  ];
+
   return (
-    <main className="portal-shell">
-      <section className="portal-hero">
-        <div className="container">
-          <div className="portal-greeting">
-            <h1>Welcome back, {escapeHtml(userProfile?.surname || "Officer")}</h1>
-            <p className="portal-greeting-sub">
-              National Portal — {userProfile?.rank || ""} &bull; {userProfile?.serviceNumber || ""}
-            </p>
+    <div className="dashboard-container">
+      <div className={`sidebar-backdrop ${sidebarOpen ? "active" : ""}`} onClick={closeSidebar} />
+      <aside className={`sidebar ${sidebarOpen ? "active" : ""}`}>
+        <div className="sidebar-header">
+          <img src="/logo.png" alt="Logo" style={{ width: 34, height: 34, borderRadius: 10 }} />
+          <h3>Cadet Portal</h3>
+        </div>
+
+        <div className="user-profile-brief">
+          <div className="avatar-frame">
+            <img
+              src={getGoogleDriveUrl(userProfile?.passportUrl) || "/logo.png"}
+              alt="Passport"
+            />
           </div>
-          <div className="portal-stats">
-            <div className="stat-card">
-              <span className="stat-number">{enrollments.length}</span>
-              <span>Enrollments</span>
-            </div>
-            <div className="stat-card">
-              <span className="stat-number">{pendingResults}</span>
-              <span>Results</span>
-            </div>
-            <div className="stat-card">
-              <span className="stat-number">{userProfile?.dateOfBirth ? calculateAge(userProfile.dateOfBirth) : "\u2014"}</span>
-              <span>Age</span>
-            </div>
+          <h4>{escapeHtml(userProfile?.surname)} {escapeHtml(userProfile?.firstName)}</h4>
+          <small>{userProfile?.rank || ""} &bull; {escapeHtml(userProfile?.serviceNumber)}</small>
+        </div>
+
+        <nav className="side-nav">
+          {navItems.map((item) =>
+            item.link ? (
+              <Link key={item.id} to={item.link} className={`nav-item ${activeSection === item.id ? "active" : ""}`} onClick={closeSidebar}>
+                <i className={`fas ${item.icon}`} />
+                {item.label}
+              </Link>
+            ) : (
+              <button key={item.id} className={`nav-item ${activeSection === item.id ? "active" : ""}`} onClick={() => { setActiveSection(item.id); closeSidebar(); }}>
+                <i className={`fas ${item.icon}`} />
+                {item.label}
+              </button>
+            )
+          )}
+        </nav>
+
+        <button className="logout-btn" onClick={handleLogout}>
+          <i className="fas fa-sign-out-alt" /> Logout
+        </button>
+      </aside>
+
+      <main className="main-content">
+        <div className="top-bar">
+          <button className="menu-toggle-btn" onClick={() => setSidebarOpen(true)}>
+            <i className="fas fa-bars" />
+          </button>
+          <div className="welcome-text">
+            <h1>Welcome back, {escapeHtml(userProfile?.surname || "Officer")}</h1>
+            <p>Enugu State Portal &mdash; {userProfile?.rank || ""} &bull; {userProfile?.serviceNumber || ""}</p>
           </div>
         </div>
-      </section>
 
-      <section className="portal-main section-padding">
-        <div className="container">
-          <div className="portal-grid">
-            <div className="portal-card profile-card">
-              <div className="profile-photo">
-                <img
-                  src={getGoogleDriveUrl(userProfile?.passportUrl) || "/logo.png"}
-                  alt="Passport"
-                />
-              </div>
-              <div className="profile-info">
-                <h2 className="profile-name">
-                  {escapeHtml(userProfile?.surname)} {escapeHtml(userProfile?.firstName)}
-                </h2>
-                <p className="profile-rank">{userProfile?.rank || ""}</p>
-                <div className="profile-details">
-                  <div><strong>Service No:</strong> {escapeHtml(userProfile?.serviceNumber)}</div>
-                  <div><strong>State:</strong> {escapeHtml(userProfile?.state)}</div>
-                  <div><strong>Area:</strong> {escapeHtml(userProfile?.area)}</div>
-                  <div><strong>Department:</strong> {escapeHtml(userProfile?.department)}</div>
-                </div>
-              </div>
+        <div className="content-wrap">
+          <div className="profile-data-grid">
+            <div className="data-card">
+              <label><i className="fas fa-graduation-cap" /> Enrollments</label>
+              <h3>{enrollments.length}</h3>
+              <p>Total courses enrolled</p>
             </div>
+            <div className="data-card">
+              <label><i className="fas fa-spinner" /> Pending Results</label>
+              <h3>{pendingResults}</h3>
+              <p>Awaiting completion</p>
+            </div>
+            <div className="data-card">
+              <label><i className="fas fa-cake" /> Age</label>
+              <h3>{userProfile?.dateOfBirth ? calculateAge(userProfile.dateOfBirth) : "\u2014"}</h3>
+              <p>As of today</p>
+            </div>
+          </div>
 
-            <div className="portal-card enrollments-card">
+          <div className="profile-data-grid">
+            <div className="data-card" style={{ gridColumn: "span 2" }}>
               <h3>My Enrollments</h3>
               {enrollments.length === 0 ? (
                 <p className="empty-state">No enrollments yet. Register for a course to get started.</p>
@@ -208,17 +267,18 @@ export default function Dashboard() {
               )}
             </div>
 
-            <div className="portal-card quick-actions-card">
+            <div className="data-card">
               <h3>Quick Actions</h3>
               <div className="quick-actions">
                 <Link to="/events" className="action-btn">Register for Course</Link>
                 <Link to="/publications" className="action-btn">View Publications</Link>
                 <Link to={`/verify?id=${userProfile?.serviceNumber}`} className="action-btn">My ID Card</Link>
-                <button onClick={handleLogout} className="action-btn logout-btn">Logout</button>
               </div>
             </div>
+          </div>
 
-            <div className="portal-card activity-card">
+          <div className="profile-data-grid">
+            <div className="data-card">
               <h3>Recent Activity</h3>
               {enrollments.length === 0 ? (
                 <p className="empty-state">No recent activity.</p>
@@ -240,9 +300,43 @@ export default function Dashboard() {
                 </div>
               )}
             </div>
+
+            <div className="data-card" style={{ gridColumn: "span 2" }}>
+              <h3>Messages {unreadMessages > 0 && <span className="msg-badge">{unreadMessages}</span>}</h3>
+              {messages.length === 0 ? (
+                <p className="empty-state">No messages yet.</p>
+              ) : (
+                <div className="messages-list">
+                  {messages.map((msg) => (
+                    <div key={msg.id} className={`message-item ${!msg.read ? "unread" : ""}`}>
+                      <div className="message-subject">
+                        {!msg.read && <span className="msg-dot" />}
+                        {escapeHtml(msg.subject)}
+                      </div>
+                      <p className="message-preview">{escapeHtml(truncate(msg.message, 120))}</p>
+                      <span className="message-date">
+                        {msg.createdAt ? formatDate(msg.createdAt.toDate()) : ""}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="data-card">
+            <h3>Profile Information</h3>
+            <div className="details-list">
+              <div className="detail-item"><strong>Service No:</strong> {escapeHtml(userProfile?.serviceNumber)}</div>
+              <div className="detail-item"><strong>State:</strong> {escapeHtml(userProfile?.state)}</div>
+              <div className="detail-item"><strong>Area:</strong> {escapeHtml(userProfile?.area)}</div>
+              <div className="detail-item"><strong>Department:</strong> {escapeHtml(userProfile?.department)}</div>
+              <div className="detail-item"><strong>Blood Group:</strong> {escapeHtml(userProfile?.bloodGroup)}</div>
+              <div className="detail-item"><strong>Date of Birth:</strong> {escapeHtml(userProfile?.dateOfBirth)}</div>
+            </div>
           </div>
         </div>
-      </section>
-    </main>
+      </main>
+    </div>
   );
 }

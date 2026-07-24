@@ -105,6 +105,7 @@ export default function Signup() {
   const [loading, setLoading] = useState(false)
   const [areas, setAreas] = useState<string[]>([])
   const [snChecking, setSnChecking] = useState(false)
+  const [emailChecking, setEmailChecking] = useState(false)
   const objectUrls = useRef<string[]>([])
   const cropImgRef = useRef<HTMLImageElement>(null)
 
@@ -202,7 +203,7 @@ export default function Signup() {
     setCompletedCrop(undefined)
   }, [])
 
-  const SN_REGEX = /^cad\/enu\/nsk\/\d{4}\/\d{3}$/i
+  const SN_REGEX = /^cad\/enu\/nsk\/\d{3}\/\d{3}$/i
 
   async function handleStep1Submit(e: React.FormEvent) {
     e.preventDefault()
@@ -217,7 +218,7 @@ export default function Signup() {
     }
 
     if (!SN_REGEX.test(sn)) {
-      setMessage("Invalid service number format. Expected: cad/enu/nsk/XXXX/XXX")
+      setMessage("Invalid service number format. Expected: cad/enu/nsk/XXX/XXX")
       setMessageType("error")
       return
     }
@@ -241,7 +242,7 @@ export default function Signup() {
     }
   }
 
-  function handleStep2Submit(e: React.FormEvent) {
+  async function handleStep2Submit(e: React.FormEvent) {
     e.preventDefault()
     setMessage("")
     setMessageType("")
@@ -272,7 +273,22 @@ export default function Signup() {
       return
     }
 
-    setStep(3)
+    setEmailChecking(true)
+    try {
+      const q = query(collection(db, "users"), where("email", "==", email.trim()))
+      const snap = await getDocs(q)
+      if (!snap.empty) {
+        setMessage("This email is already registered.")
+        setMessageType("error")
+        return
+      }
+      setStep(3)
+    } catch {
+      setMessage("Unable to verify email. Please try again.")
+      setMessageType("error")
+    } finally {
+      setEmailChecking(false)
+    }
   }
 
   async function handleSignup(e: React.FormEvent) {
@@ -603,8 +619,8 @@ export default function Signup() {
                 </div>
               </div>
 
-              <button type="submit" id="signupBtn" className={loading ? "loading" : ""} disabled={loading}>
-                <span className="btn-text">Continue to Password Setup</span>
+              <button type="submit" id="signupBtn" className={loading || emailChecking ? "loading" : ""} disabled={loading || emailChecking}>
+                <span className="btn-text">{emailChecking ? "Checking..." : "Continue to Password Setup"}</span>
                 <span className="spinner" />
               </button>
 
