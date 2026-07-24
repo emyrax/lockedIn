@@ -1,9 +1,11 @@
 import { useState, useEffect, useCallback, useRef } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { createUserWithEmailAndPassword, sendEmailVerification } from "firebase/auth"
-import { doc, setDoc, serverTimestamp } from "firebase/firestore"
+import { doc, setDoc, serverTimestamp, collection, query, where, getDocs } from "firebase/firestore"
 import { auth, db, GOOGLE_SHEETS_API, generateEmail } from "../config/firebase"
 import { useAuth } from "../contexts/AuthContext"
+import ReactCrop, { type Crop, type PixelCrop } from "react-image-crop"
+import "react-image-crop/dist/ReactCrop.css"
 
 const NIGERIA_STATES = [
   "Abia", "Adamawa", "Akwa Ibom", "Anambra", "Bauchi", "Bayelsa", "Benue",
@@ -22,6 +24,15 @@ const DEPARTMENTS = [
 const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]
 const EDUCATION_LEVELS = ["SSCE", "OND", "HND", "B.Sc", "M.Sc", "PhD", "Other"]
 const MARITAL_STATUSES = ["Single", "Married", "Divorced", "Widowed"]
+const MAX_IMAGE_SIZE = 2 * 1024 * 1024
+const RANKS = [
+  "Brigade Commander", "Deputy Brigade Commander", "Assistant Brigade Commander",
+  "Commander", "Deputy Commander", "Assistant Commander",
+  "Chief Superintendent", "Superintendent", "Deputy Superintendent",
+  "Assistant Superintendent I", "Assistant Superintendent II",
+  "Inspector", "Deputy Inspector", "Assistant Inspector",
+  "Staff Sergeant", "Sergeant", "Corporal", "Lance Corporal", "Private"
+]
 
 function getPasswordStrength(pw: string): { label: string; color: string; score: number } {
   let score = 0
@@ -93,7 +104,13 @@ export default function Signup() {
   const [messageType, setMessageType] = useState<"error" | "success" | "">("")
   const [loading, setLoading] = useState(false)
   const [areas, setAreas] = useState<string[]>([])
+  const [snChecking, setSnChecking] = useState(false)
   const objectUrls = useRef<string[]>([])
+  const cropImgRef = useRef<HTMLImageElement>(null)
+
+  const [cropSrc, setCropSrc] = useState("")
+  const [crop, setCrop] = useState<Crop>()
+  const [completedCrop, setCompletedCrop] = useState<PixelCrop>()
 
   useEffect(() => {
     document.body.classList.add("auth-page")
@@ -125,14 +142,21 @@ export default function Signup() {
 
   const handlePassportChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (file) {
-      if (passportPreview) URL.revokeObjectURL(passportPreview)
-      const url = URL.createObjectURL(file)
-      setPassportFile(file)
-      setPassportPreview(url)
-      objectUrls.current.push(url)
+    if (!file) return
+    if (file.size > MAX_IMAGE_SIZE) {
+      setMessage("Passport photo must be less than 2MB.")
+      setMessageType("error")
+      e.target.value = ""
+      return
     }
-  }, [passportPreview])
+    setMessage("")
+    setMessageType("")
+    const reader = new FileReader()
+    reader.addEventListener("load", () => {
+      setCropSrc(reader.result as string)
+    })
+    reader.readAsDataURL(file)
+  }, [])
 
   const handleSignatureChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -145,18 +169,43 @@ export default function Signup() {
     }
   }, [signaturePreview])
 
-  function handleStep1Submit(e: React.FormEvent) {
+  const SN_REGEX = /^cad\/enu\/nsk\/\d{4}\/\d{3}$/i
+
+  async function handleStep1Submit(e: React.FormEvent) {
     e.preventDefault()
     setMessage("")
     setMessageType("")
 
-    if (!serviceNumber.trim()) {
+    const sn = serviceNumber.trim().toLowerCase()
+    if (!sn) {
       setMessage("Official Service Number is required.")
       setMessageType("error")
       return
     }
 
-    setStep(2)
+    if (!SN_REGEX.test(sn)) {
+      setMessage("Invalid service number format. Expected: cad/enu/nsk/XXXX/XXX")
+      setMessageType("error")
+      return
+    }
+
+    setSnChecking(true)
+    try {
+      const q = query(collection(db, "users"), where("serviceNumber", "==", sn))
+      const snap = await getDocs(q)
+      if (!snap.empty) {
+        setMessage("This service number is already registered.")
+        setMessageType("error")
+        return
+      }
+      setServiceNumber(sn)
+      setStep(2)
+    } catch {
+      setMessage("Unable to verify service number. Please try again.")
+      setMessageType("error")
+    } finally {
+      setSnChecking(false)
+    }
   }
 
   function handleStep2Submit(e: React.FormEvent) {
@@ -228,7 +277,7 @@ export default function Signup() {
 
       try {
         await setDoc(doc(db, "users", uid), {
-          serviceNumber: serviceNumber.trim(),
+          serviceNumber: serviceNumber.trim().toLowerCase(),
           firstName: firstName.trim(),
           surname: surname.trim(),
           otherName: otherName.trim(),
@@ -322,15 +371,15 @@ export default function Signup() {
                 <input
                   type="text"
                   required
-                  placeholder="Official Service Number * (e.g. CAD/01/234/XX)"
+                  placeholder="Official Service Number * (cad/enu/nsk/XXXX/XXX)"
                   value={serviceNumber}
                   onChange={(e) => setServiceNumber(e.target.value)}
                   disabled={loading}
                 />
               </div>
 
-              <button type="submit" id="signupBtn" className={loading ? "loading" : ""} disabled={loading}>
-                <span className="btn-text">Continue</span>
+              <button type="submit" id="signupBtn" className={loading || snChecking ? "loading" : ""} disabled={loading || snChecking}>
+                <span className="btn-text">{snChecking ? "Checking..." : "Continue"}</span>
                 <span className="spinner" />
               </button>
 
@@ -386,23 +435,23 @@ export default function Signup() {
               <div className="grid">
                 <div className="input-group" style={{ flex: 1 }}>
                   <i className="fas fa-venus-mars input-icon" />
-                  <select value={gender} onChange={(e) => setGender(e.target.value)} disabled={loading}>
-                    <option value="">Select Gender</option>
+                  <select required value={gender} onChange={(e) => setGender(e.target.value)} disabled={loading}>
+                    <option value="">Select Gender *</option>
                     <option value="Male">Male</option>
                     <option value="Female">Female</option>
                   </select>
                 </div>
                 <div className="input-group" style={{ flex: 1 }}>
                   <i className="fas fa-calendar input-icon" />
-                  <input type="date" placeholder="Date of Birth" value={dateOfBirth} onChange={(e) => setDateOfBirth(e.target.value)} disabled={loading} />
+                  <input type="date" required placeholder="Date of Birth *" value={dateOfBirth} onChange={(e) => setDateOfBirth(e.target.value)} disabled={loading} />
                 </div>
               </div>
 
               <div className="grid">
                 <div className="input-group" style={{ flex: 1 }}>
                   <i className="fas fa-tint input-icon" />
-                  <select value={bloodGroup} onChange={(e) => setBloodGroup(e.target.value)} disabled={loading}>
-                    <option value="">Blood Group</option>
+                  <select required value={bloodGroup} onChange={(e) => setBloodGroup(e.target.value)} disabled={loading}>
+                    <option value="">Blood Group *</option>
                     {BLOOD_GROUPS.map((bg) => <option key={bg} value={bg}>{bg}</option>)}
                   </select>
                 </div>
@@ -418,7 +467,10 @@ export default function Signup() {
               <div className="grid">
                 <div className="input-group" style={{ flex: 1 }}>
                   <i className="fas fa-tag input-icon" />
-                  <input placeholder="Rank" value={rank} onChange={(e) => setRank(e.target.value)} disabled={loading} />
+                  <select required value={rank} onChange={(e) => setRank(e.target.value)} disabled={loading}>
+                    <option value="">Select Rank *</option>
+                    {RANKS.map((r) => <option key={r} value={r}>{r}</option>)}
+                  </select>
                 </div>
               </div>
 
@@ -461,10 +513,7 @@ export default function Signup() {
                 </div>
                 <div className="input-group">
                   <i className="fas fa-location-dot input-icon" />
-                  <select value={area} onChange={(e) => setArea(e.target.value)} disabled={loading}>
-                    <option value="">Select Area</option>
-                    {areas.map((a) => <option key={a} value={a}>{a}</option>)}
-                  </select>
+                  <input required placeholder="Area *" value={area} onChange={(e) => setArea(e.target.value)} disabled={loading} />
                 </div>
               </div>
 
@@ -495,22 +544,22 @@ export default function Signup() {
               <div className="grid">
                 <div className="input-group">
                   <i className="fas fa-user-tie input-icon" />
-                  <input placeholder="Full Name" value={nokName} onChange={(e) => setNokName(e.target.value)} disabled={loading} />
+                  <input required placeholder="Full Name *" value={nokName} onChange={(e) => setNokName(e.target.value)} disabled={loading} />
                 </div>
                 <div className="input-group">
                   <i className="fas fa-link input-icon" />
-                  <input placeholder="Relationship" value={nokRelation} onChange={(e) => setNokRelation(e.target.value)} disabled={loading} />
+                  <input required placeholder="Relationship *" value={nokRelation} onChange={(e) => setNokRelation(e.target.value)} disabled={loading} />
                 </div>
               </div>
 
               <div className="grid">
                 <div className="input-group">
                   <i className="fas fa-phone input-icon" />
-                  <input type="tel" placeholder="Phone Number" value={nokPhone} onChange={(e) => setNokPhone(e.target.value)} disabled={loading} />
+                  <input type="tel" required placeholder="Phone Number *" value={nokPhone} onChange={(e) => setNokPhone(e.target.value)} disabled={loading} />
                 </div>
                 <div className="input-group">
                   <i className="fas fa-map-pin input-icon" />
-                  <input placeholder="Contact Address" value={nokAddress} onChange={(e) => setNokAddress(e.target.value)} disabled={loading} />
+                  <input required placeholder="Contact Address *" value={nokAddress} onChange={(e) => setNokAddress(e.target.value)} disabled={loading} />
                 </div>
               </div>
 

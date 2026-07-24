@@ -1052,8 +1052,8 @@ export default function Admin() {
                   <input value={addForm.otherName || ""} onChange={e => setAddForm(p => ({ ...p, otherName: e.target.value }))} />
                 </div>
                 <div className="input-group-modal">
-                  <label>Gender</label>
-                  <select value={addForm.gender || ""} onChange={e => setAddForm(p => ({ ...p, gender: e.target.value }))}>
+                  <label>Gender *</label>
+                  <select required value={addForm.gender || ""} onChange={e => setAddForm(p => ({ ...p, gender: e.target.value }))}>
                     <option value="">Select</option>
                     <option value="Male">Male</option>
                     <option value="Female">Female</option>
@@ -1061,12 +1061,12 @@ export default function Admin() {
                   </select>
                 </div>
                 <div className="input-group-modal">
-                  <label>Date of Birth</label>
-                  <input type="date" value={addForm.dateOfBirth || ""} onChange={e => setAddForm(p => ({ ...p, dateOfBirth: e.target.value }))} />
+                  <label>Date of Birth *</label>
+                  <input type="date" required value={addForm.dateOfBirth || ""} onChange={e => setAddForm(p => ({ ...p, dateOfBirth: e.target.value }))} />
                 </div>
                 <div className="input-group-modal">
-                  <label>Blood Group</label>
-                  <select value={addForm.bloodGroup || ""} onChange={e => setAddForm(p => ({ ...p, bloodGroup: e.target.value }))}>
+                  <label>Blood Group *</label>
+                  <select required value={addForm.bloodGroup || ""} onChange={e => setAddForm(p => ({ ...p, bloodGroup: e.target.value }))}>
                     <option value="">Select</option>
                     {["A+","A-","B+","B-","AB+","AB-","O+","O-"].map(b => <option key={b} value={b}>{b}</option>)}
                   </select>
@@ -1105,8 +1105,8 @@ export default function Admin() {
                   <input required value={addForm.phone || ""} onChange={e => setAddForm(p => ({ ...p, phone: e.target.value }))} />
                 </div>
                 <div className="input-group-modal">
-                  <label>Email</label>
-                  <input type="email" value={addForm.email || ""} onChange={e => setAddForm(p => ({ ...p, email: e.target.value }))} />
+                  <label>Email *</label>
+                  <input type="email" required value={addForm.email || ""} onChange={e => setAddForm(p => ({ ...p, email: e.target.value }))} />
                 </div>
                 <div className="input-group-modal">
                   <label>Service Number *</label>
@@ -1120,27 +1120,27 @@ export default function Admin() {
                   </select>
                 </div>
                 <div className="input-group-modal">
-                  <label>Department</label>
-                  <select value={addForm.department || ""} onChange={e => setAddForm(p => ({ ...p, department: e.target.value }))}>
+                  <label>Department *</label>
+                  <select required value={addForm.department || ""} onChange={e => setAddForm(p => ({ ...p, department: e.target.value }))}>
                     <option value="">Select</option>
                     {DEPARTMENTS.map(d => <option key={d} value={d}>{d}</option>)}
                   </select>
                 </div>
                 <div className="input-group-modal">
-                  <label>Area</label>
-                  <input value={addForm.area || ""} onChange={e => setAddForm(p => ({ ...p, area: e.target.value }))} />
+                  <label>Area *</label>
+                  <input required value={addForm.area || ""} onChange={e => setAddForm(p => ({ ...p, area: e.target.value }))} />
                 </div>
                 <div className="input-group-modal">
-                  <label>Zone</label>
-                  <input value={addForm.zone || ""} onChange={e => setAddForm(p => ({ ...p, zone: e.target.value }))} />
+                  <label>Zone *</label>
+                  <input required value={addForm.zone || ""} onChange={e => setAddForm(p => ({ ...p, zone: e.target.value }))} />
                 </div>
                 <div className="input-group-modal">
-                  <label>Commander</label>
-                  <input value={addForm.commander || ""} onChange={e => setAddForm(p => ({ ...p, commander: e.target.value }))} />
+                  <label>Commander *</label>
+                  <input required value={addForm.commander || ""} onChange={e => setAddForm(p => ({ ...p, commander: e.target.value }))} />
                 </div>
                 <div className="input-group-modal">
-                  <label>State</label>
-                  <input value={addForm.state || ""} onChange={e => setAddForm(p => ({ ...p, state: e.target.value }))} />
+                  <label>State *</label>
+                  <input required value={addForm.state || ""} onChange={e => setAddForm(p => ({ ...p, state: e.target.value }))} />
                 </div>
                 <div className="input-group-modal">
                   <label>LGA</label>
@@ -1193,19 +1193,19 @@ export default function Admin() {
                   <input value={editForm.otherName || ""} onChange={e => setEditForm(p => ({ ...p, otherName: e.target.value }))} />
                 </div>
                 <div className="input-group-modal">
-                  <label>Gender</label>
-                  <select value={editForm.gender || ""} onChange={e => setEditForm(p => ({ ...p, gender: e.target.value }))}>
+                  <label>Gender *</label>
+                  <select required value={editForm.gender || ""} onChange={e => setEditForm(p => ({ ...p, gender: e.target.value }))}>
                     <option value="">Select</option>
                     <option value="Male">Male</option><option value="Female">Female</option><option value="Other">Other</option>
                   </select>
                 </div>
                 <div className="input-group-modal">
-                  <label>Date of Birth</label>
-                  <input type="date" value={editForm.dateOfBirth || ""} onChange={e => setEditForm(p => ({ ...p, dateOfBirth: e.target.value }))} />
+                  <label>Date of Birth *</label>
+                  <input type="date" required value={editForm.dateOfBirth || ""} onChange={e => setEditForm(p => ({ ...p, dateOfBirth: e.target.value }))} />
                 </div>
                 <div className="input-group-modal">
-                  <label>Blood Group</label>
-                  <select value={editForm.bloodGroup || ""} onChange={e => setEditForm(p => ({ ...p, bloodGroup: e.target.value }))}>
+                  <label>Blood Group *</label>
+                  <select required value={editForm.bloodGroup || ""} onChange={e => setEditForm(p => ({ ...p, bloodGroup: e.target.value }))}>
                     <option value="">Select</option>
                     {["A+","A-","B+","B-","AB+","AB-","O+","O-"].map(b => <option key={b} value={b}>{b}</option>)}
                   </select>
@@ -1241,8 +1241,8 @@ export default function Admin() {
                   <input required value={editForm.phone || ""} onChange={e => setEditForm(p => ({ ...p, phone: e.target.value }))} />
                 </div>
                 <div className="input-group-modal">
-                  <label>Email</label>
-                  <input type="email" value={editForm.email || ""} onChange={e => setEditForm(p => ({ ...p, email: e.target.value }))} />
+                  <label>Email *</label>
+                  <input type="email" required value={editForm.email || ""} onChange={e => setEditForm(p => ({ ...p, email: e.target.value }))} />
                 </div>
                 <div className="input-group-modal">
                   <label>Service Number</label>
@@ -1256,8 +1256,8 @@ export default function Admin() {
                   </select>
                 </div>
                 <div className="input-group-modal">
-                  <label>Department</label>
-                  <select value={editForm.department || ""} onChange={e => setEditForm(p => ({ ...p, department: e.target.value }))}>
+                  <label>Department *</label>
+                  <select required value={editForm.department || ""} onChange={e => setEditForm(p => ({ ...p, department: e.target.value }))}>
                     <option value="">Select</option>
                     {DEPARTMENTS.map(d => <option key={d} value={d}>{d}</option>)}
                   </select>
@@ -1271,20 +1271,20 @@ export default function Admin() {
                   <input value={editForm.appointment || ""} onChange={e => setEditForm(p => ({ ...p, appointment: e.target.value }))} />
                 </div>
                 <div className="input-group-modal">
-                  <label>Area</label>
-                  <input value={editForm.area || ""} onChange={e => setEditForm(p => ({ ...p, area: e.target.value }))} />
+                  <label>Area *</label>
+                  <input required value={editForm.area || ""} onChange={e => setEditForm(p => ({ ...p, area: e.target.value }))} />
                 </div>
                 <div className="input-group-modal">
-                  <label>Zone</label>
-                  <input value={editForm.zone || ""} onChange={e => setEditForm(p => ({ ...p, zone: e.target.value }))} />
+                  <label>Zone *</label>
+                  <input required value={editForm.zone || ""} onChange={e => setEditForm(p => ({ ...p, zone: e.target.value }))} />
                 </div>
                 <div className="input-group-modal">
-                  <label>Commander</label>
-                  <input value={editForm.commander || ""} onChange={e => setEditForm(p => ({ ...p, commander: e.target.value }))} />
+                  <label>Commander *</label>
+                  <input required value={editForm.commander || ""} onChange={e => setEditForm(p => ({ ...p, commander: e.target.value }))} />
                 </div>
                 <div className="input-group-modal">
-                  <label>State</label>
-                  <input value={editForm.state || ""} onChange={e => setEditForm(p => ({ ...p, state: e.target.value }))} />
+                  <label>State *</label>
+                  <input required value={editForm.state || ""} onChange={e => setEditForm(p => ({ ...p, state: e.target.value }))} />
                 </div>
                 <div className="input-group-modal">
                   <label>LGA</label>
@@ -1303,20 +1303,20 @@ export default function Admin() {
                   <input value={editForm.education || ""} onChange={e => setEditForm(p => ({ ...p, education: e.target.value }))} />
                 </div>
                 <div className="input-group-modal">
-                  <label>Next of Kin Name</label>
-                  <input value={editForm.nokName || ""} onChange={e => setEditForm(p => ({ ...p, nokName: e.target.value }))} />
+                  <label>Next of Kin Name *</label>
+                  <input required value={editForm.nokName || ""} onChange={e => setEditForm(p => ({ ...p, nokName: e.target.value }))} />
                 </div>
                 <div className="input-group-modal">
-                  <label>Next of Kin Relation</label>
-                  <input value={editForm.nokRelation || ""} onChange={e => setEditForm(p => ({ ...p, nokRelation: e.target.value }))} />
+                  <label>Next of Kin Relation *</label>
+                  <input required value={editForm.nokRelation || ""} onChange={e => setEditForm(p => ({ ...p, nokRelation: e.target.value }))} />
                 </div>
                 <div className="input-group-modal">
-                  <label>Next of Kin Phone</label>
-                  <input value={editForm.nokPhone || ""} onChange={e => setEditForm(p => ({ ...p, nokPhone: e.target.value }))} />
+                  <label>Next of Kin Phone *</label>
+                  <input required value={editForm.nokPhone || ""} onChange={e => setEditForm(p => ({ ...p, nokPhone: e.target.value }))} />
                 </div>
                 <div className="input-group-modal" style={{ gridColumn: "1 / -1" }}>
-                  <label>Next of Kin Address</label>
-                  <textarea rows={2} value={editForm.nokAddress || ""} onChange={e => setEditForm(p => ({ ...p, nokAddress: e.target.value }))} />
+                  <label>Next of Kin Address *</label>
+                  <textarea required rows={2} value={editForm.nokAddress || ""} onChange={e => setEditForm(p => ({ ...p, nokAddress: e.target.value }))} />
                 </div>
                 <div className="input-group-modal">
                   <label>Passport URL</label>
