@@ -987,7 +987,7 @@ export default function Admin() {
                         onChange={e => setAddAdminRole(e.target.value)}
                         style={{ width: "100%", padding: "10px 12px", borderRadius: 6, border: "1px solid #ddd" }}
                       >
-                        {ADMIN_ROLES.filter(r => r !== "super-admin").map(r => (
+                        {ADMIN_ROLES.map(r => (
                           <option key={r} value={r}>{r}</option>
                         ))}
                       </select>
