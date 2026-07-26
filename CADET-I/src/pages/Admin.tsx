@@ -22,7 +22,7 @@ function statusBadgeClass(status: string) {
 const ADMIN_ROLES = ["super-admin", "manager", "media-admin"];
 
 export default function Admin() {
-  const { user, profile, loading: authLoading, profileLoading, isAdmin, login, loginWithGoogle, logout } = useAuth();
+  const { user, profile, loading: authLoading, profileLoading, isAdmin, adminRole, login, loginWithGoogle, logout } = useAuth();
   const navigate = useNavigate();
 
   const [activeTab, setActiveTab] = useState("officers");
@@ -53,6 +53,7 @@ export default function Admin() {
   const [addAdminRole, setAddAdminRole] = useState("manager");
   const [addAdminLoading, setAddAdminLoading] = useState(false);
   const [addAdminError, setAddAdminError] = useState("");
+  const [promotingId, setPromotingId] = useState<string | null>(null);
 
   const [qrOfficer, setQrOfficer] = useState<any | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -247,6 +248,35 @@ export default function Admin() {
     }
   }
 
+  async function handleMakeAdmin(officer: any) {
+    const role = prompt("Enter admin role (manager / media-admin):", "manager");
+    if (!role) return;
+    const r = role.trim().toLowerCase();
+    if (r !== "manager" && r !== "media-admin") {
+      setToast({ message: 'Role must be "manager" or "media-admin"', type: "error" });
+      return;
+    }
+    setPromotingId(officer.id);
+    try {
+      const adminRef = doc(db, "admins", officer.id);
+      const existing = await getDoc(adminRef);
+      if (existing.exists()) {
+        setToast({ message: `${officer.serviceNumber} is already an admin`, type: "error" });
+        return;
+      }
+      await setDoc(adminRef, {
+        email: officer.email || "",
+        role: r,
+        createdAt: Timestamp.now(),
+      });
+      setToast({ message: `${officer.serviceNumber} promoted to ${r}`, type: "success" });
+    } catch (err: any) {
+      setToast({ message: "Failed to promote: " + err.message, type: "error" });
+    } finally {
+      setPromotingId(null);
+    }
+  }
+
   async function handleUpdateEnrollmentStatus(enrollmentId: string, status: string) {
     try {
       await updateDoc(doc(db, "enrollments", enrollmentId), { status });
@@ -373,7 +403,7 @@ export default function Admin() {
     return name.includes(t) || sn.includes(t);
   });
 
-  const isSuperAdmin = isAdmin && user?.email === "ekwuemesat@gmail.com";
+  const isSuperAdmin = adminRole === "super-admin";
 
   async function handleLoginSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -662,6 +692,15 @@ export default function Admin() {
                                 title="Show QR code"
                               >
                                 <i className="fas fa-qrcode"></i>
+                              </button>
+                              <button
+                                className="action-icon"
+                                style={{ color: "#0d7a28", borderColor: "#bbf7d0", background: "#f0fdf4" }}
+                                onClick={() => handleMakeAdmin(o)}
+                                disabled={promotingId === o.id}
+                                title="Promote to admin"
+                              >
+                                <i className={`fas ${promotingId === o.id ? "fa-spinner fa-spin" : "fa-user-shield"}`}></i>
                               </button>
                               <button
                                 className="action-icon"

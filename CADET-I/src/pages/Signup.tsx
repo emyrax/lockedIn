@@ -24,6 +24,7 @@ const DEPARTMENTS = [
 const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]
 const EDUCATION_LEVELS = ["SSCE", "OND", "HND", "B.Sc", "M.Sc", "PhD", "Other"]
 const MARITAL_STATUSES = ["Single", "Married", "Divorced", "Widowed"]
+const GENOTYPES = ["AA", "AS", "SS", "AC"]
 const MAX_IMAGE_SIZE = 2 * 1024 * 1024
 const RANKS = [
   "Brigade Commander", "Deputy Brigade Commander", "Assistant Brigade Commander",
@@ -81,6 +82,14 @@ export default function Signup() {
   const [area, setArea] = useState("")
   const [lga, setLga] = useState("")
   const [address, setAddress] = useState("")
+  const [zone, setZone] = useState("")
+  const [commander, setCommander] = useState("")
+  const [postHeld, setPostHeld] = useState("")
+  const [appointment, setAppointment] = useState("")
+  const [genotype, setGenotype] = useState("")
+  const [allergies, setAllergies] = useState("")
+  const [medicalConditions, setMedicalConditions] = useState("")
+  const [emergencyPhone, setEmergencyPhone] = useState("")
   const [department, setDepartment] = useState("")
   const [rank, setRank] = useState("")
   const [occupation, setOccupation] = useState("")
@@ -281,6 +290,16 @@ export default function Signup() {
       setMessageType("error")
       return
     }
+    if (!zone.trim()) {
+      setMessage("Zone is required.")
+      setMessageType("error")
+      return
+    }
+    if (!commander.trim()) {
+      setMessage("Commander is required.")
+      setMessageType("error")
+      return
+    }
     if (!department) {
       setMessage("Please select your department.")
       setMessageType("error")
@@ -359,9 +378,17 @@ export default function Signup() {
           rank: rank.trim(),
           state,
           stateOfOrigin,
-          area,
+          area: area.trim(),
           lga: lga.trim(),
           address: address.trim(),
+          zone: zone.trim(),
+          commander: commander.trim(),
+          postHeld: postHeld.trim(),
+          appointment: appointment.trim(),
+          genotype,
+          allergies: allergies.trim(),
+          medicalConditions: medicalConditions.trim(),
+          emergencyPhone: emergencyPhone.trim(),
           department,
           occupation: occupation.trim(),
           employer: employer.trim(),
@@ -602,6 +629,58 @@ export default function Signup() {
               <div className="input-group">
                 <i className="fas fa-home input-icon" />
                 <input placeholder="Contact Address" value={address} onChange={(e) => setAddress(e.target.value)} disabled={loading} />
+              </div>
+
+              <div className="form-section-header" style={{ marginTop: 24 }}>
+                <i className="fas fa-info-circle" />
+                <span>Additional Information</span>
+              </div>
+
+              <div className="grid">
+                <div className="input-group" style={{ flex: 1 }}>
+                  <i className="fas fa-globe input-icon" />
+                  <input required placeholder="Zone *" value={zone} onChange={(e) => setZone(e.target.value)} disabled={loading} />
+                </div>
+                <div className="input-group" style={{ flex: 1 }}>
+                  <i className="fas fa-user-shield input-icon" />
+                  <input required placeholder="Commander *" value={commander} onChange={(e) => setCommander(e.target.value)} disabled={loading} />
+                </div>
+              </div>
+
+              <div className="grid">
+                <div className="input-group" style={{ flex: 1 }}>
+                  <i className="fas fa-briefcase input-icon" />
+                  <input placeholder="Post Held" value={postHeld} onChange={(e) => setPostHeld(e.target.value)} disabled={loading} />
+                </div>
+                <div className="input-group" style={{ flex: 1 }}>
+                  <i className="fas fa-tasks input-icon" />
+                  <input placeholder="Appointment" value={appointment} onChange={(e) => setAppointment(e.target.value)} disabled={loading} />
+                </div>
+              </div>
+
+              <div className="grid">
+                <div className="input-group" style={{ flex: 1 }}>
+                  <i className="fas fa-dna input-icon" />
+                  <select value={genotype} onChange={(e) => setGenotype(e.target.value)} disabled={loading}>
+                    <option value="">Genotype</option>
+                    {GENOTYPES.map((g) => <option key={g} value={g}>{g}</option>)}
+                  </select>
+                </div>
+                <div className="input-group" style={{ flex: 1 }}>
+                  <i className="fas fa-exclamation-triangle input-icon" />
+                  <input placeholder="Allergies (e.g. Penicillin, Peanuts)" value={allergies} onChange={(e) => setAllergies(e.target.value)} disabled={loading} />
+                </div>
+              </div>
+
+              <div className="grid">
+                <div className="input-group" style={{ flex: 1 }}>
+                  <i className="fas fa-notes-medical input-icon" />
+                  <input placeholder="Medical Conditions (e.g. Asthma, Diabetes)" value={medicalConditions} onChange={(e) => setMedicalConditions(e.target.value)} disabled={loading} />
+                </div>
+                <div className="input-group" style={{ flex: 1 }}>
+                  <i className="fas fa-phone-alt input-icon" />
+                  <input type="tel" placeholder="Emergency Phone" value={emergencyPhone} onChange={(e) => setEmergencyPhone(e.target.value)} disabled={loading} />
+                </div>
               </div>
 
               <div className="form-section-header" style={{ marginTop: 24 }}>

@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState, useRef } from "react";
 import { onAuthStateChanged, signOut, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import type { User } from "firebase/auth";
-import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
+import { collection, doc, getDoc, query, where, onSnapshot, setDoc, serverTimestamp } from "firebase/firestore";
 import { auth, db } from "../config/firebase";
 import type { OfficerUser } from "../types";
 
@@ -15,13 +15,14 @@ interface AuthContextType {
   profileLoading: boolean;
   isAdmin: boolean;
   isMediaAdmin: boolean;
+  adminRole: string | null;
   login: (email: string, password: string) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
-  user: null, profile: null, loading: true, profileLoading: true, isAdmin: false, isMediaAdmin: false,
+  user: null, profile: null, loading: true, profileLoading: true, isAdmin: false, isMediaAdmin: false, adminRole: null,
   login: async () => {},
   loginWithGoogle: async () => {},
   logout: async () => {},
@@ -47,7 +48,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profileLoading, setProfileLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isMediaAdmin, setIsMediaAdmin] = useState(false);
+  const [adminRole, setAdminRole] = useState<string | null>(null);
   const idleRef = useRef<number>();
+  const unsubAdminRef = useRef<() => void>();
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (u) => {
@@ -57,34 +60,43 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setProfileLoading(true);
         sessionStorage.setItem("cadeti_session_started_at", String(Date.now()));
         updateActivity();
-        try {
-          const snap = await getDoc(doc(db, "users", u.uid));
-          if (snap.exists()) setProfile(snap.data() as OfficerUser);
-          const adminRef = doc(db, "admins", u.uid);
-          const adminSnap = await getDoc(adminRef);
-          if (adminSnap.exists()) {
-            const adminData = adminSnap.data();
+        const adminQuery = query(collection(db, "admins"), where("email", "==", u.email));
+        if (unsubAdminRef.current) unsubAdminRef.current();
+        unsubAdminRef.current = onSnapshot(adminQuery, (snap) => {
+          if (!snap.empty) {
+            const data = snap.docs[0].data();
+            const role = String(data.role || data.Role || "").toLowerCase();
             setIsAdmin(true);
-            setIsMediaAdmin(String(adminData.role || adminData.Role || "").toLowerCase().includes("media"));
+            setAdminRole(role);
+            setIsMediaAdmin(role.includes("media"));
           } else {
             if (u.email === "ekwuemesat@gmail.com") {
               setIsAdmin(true);
+              setAdminRole("super-admin");
               setIsMediaAdmin(false);
-              setDoc(adminRef, {
+              setDoc(doc(db, "admins", u.uid), {
                 email: "ekwuemesat@gmail.com",
                 role: "super-admin",
                 createdAt: serverTimestamp(),
               }).catch(err => console.error("Failed to create admin doc:", err));
             } else {
               setIsAdmin(false);
+              setAdminRole(null);
               setIsMediaAdmin(false);
             }
           }
-        } catch (err) { console.error("Auth check error:", err); }
-        setProfileLoading(false);
+          setProfileLoading(false);
+        }, (err) => {
+          console.error("Admin listener error:", err);
+          setProfileLoading(false);
+        });
+        const snap = await getDoc(doc(db, "users", u.uid));
+        if (snap.exists()) setProfile(snap.data() as OfficerUser);
       } else {
+        if (unsubAdminRef.current) unsubAdminRef.current();
         setProfile(null);
         setIsAdmin(false);
+        setAdminRole(null);
         setIsMediaAdmin(false);
         setProfileLoading(false);
         sessionStorage.removeItem("cadeti_session_started_at");
@@ -96,6 +108,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     events.forEach((e) => window.addEventListener(e, handler, { passive: true }));
     return () => {
       unsub();
+      if (unsubAdminRef.current) unsubAdminRef.current();
       events.forEach((e) => window.removeEventListener(e, handler));
       if (idleRef.current) clearInterval(idleRef.current);
     };
@@ -148,7 +161,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, profile, loading, profileLoading, isAdmin, isMediaAdmin, login, loginWithGoogle, logout }}>
+    <AuthContext.Provider value={{ user, profile, loading, profileLoading, isAdmin, isMediaAdmin, adminRole, login, loginWithGoogle, logout }}>
       {children}
     </AuthContext.Provider>
   );
