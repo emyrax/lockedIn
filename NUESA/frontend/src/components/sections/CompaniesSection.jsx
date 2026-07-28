@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import InfiniteMarquee from '../common/InfiniteMarquee';
+import SectionFloatingBg from '../common/SectionFloatingBg';
 import GearDecoration from '../common/GearDecoration';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -59,12 +60,14 @@ export default function CompaniesSection() {
   }, []);
 
   return (
-    <section className="relative overflow-hidden" style={{ background: 'var(--bg)' }}>
-      <div className="absolute top-0 left-0 right-0 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(217,119,6,0.15), rgba(5,150,105,0.15), transparent)' }} />
-      <GearDecoration size="large" color="var(--emerald)" className="absolute -top-6 -right-6 opacity-15" />
-      <GearDecoration size="medium" color="var(--gold)" className="absolute -bottom-8 -left-6 opacity-15" />
+    <section className="relative overflow-hidden bg-grid-engineering" style={{ backgroundColor: 'var(--bg)' }}>
+      <SectionFloatingBg />
+      <div className="relative z-[2]">
+        <div className="absolute top-0 left-0 right-0 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(217,119,6,0.15), rgba(5,150,105,0.15), transparent)' }} />
+        <GearDecoration size="large" color="var(--emerald)" className="absolute -top-6 -right-6 opacity-15" />
+        <GearDecoration size="medium" color="var(--gold)" className="absolute -bottom-8 -left-6 opacity-15" />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 lg:py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 lg:py-20">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -111,6 +114,7 @@ export default function CompaniesSection() {
             Explore by Department <i className="fas fa-arrow-right ml-1" />
           </Link>
         </motion.div>
+      </div>
       </div>
     </section>
   );

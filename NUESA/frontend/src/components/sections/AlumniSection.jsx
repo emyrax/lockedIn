@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import GearDecoration from '../common/GearDecoration';
+import SectionFloatingBg from '../common/SectionFloatingBg';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -40,12 +41,14 @@ export default function AlumniSection({ content }) {
   }, []);
 
   return (
-    <section className="relative overflow-hidden" style={{ background: 'var(--bg-alt)' }}>
-      <div className="absolute top-0 left-0 right-0 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(217,119,6,0.15), transparent)' }} />
-      <GearDecoration size="medium" color="var(--gold)" className="absolute top-4 right-4 opacity-10" />
-      <GearDecoration size="small" color="var(--emerald)" className="absolute bottom-6 left-6 opacity-15" />
+    <section className="relative overflow-hidden bg-grid-engineering" style={{ backgroundColor: 'var(--bg-alt)' }}>
+      <SectionFloatingBg />
+      <div className="relative z-[2]">
+        <div className="absolute top-0 left-0 right-0 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(217,119,6,0.15), transparent)' }} />
+        <GearDecoration size="medium" color="var(--gold)" className="absolute top-4 right-4 opacity-10" />
+        <GearDecoration size="small" color="var(--emerald)" className="absolute bottom-6 left-6 opacity-15" />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 lg:py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 lg:py-20">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -134,6 +137,7 @@ export default function AlumniSection({ content }) {
             View More Alumni <i className="fas fa-arrow-right ml-1" />
           </Link>
         </motion.div>
+      </div>
       </div>
     </section>
   );

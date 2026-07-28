@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
+import SectionFloatingBg from '../common/SectionFloatingBg';
 
 const featuredProjects = [
   { title: 'Solar-Powered Irrigation System', team: 'Agric Eng. Team', dept: 'ABE', raised: 3200000, goal: 5000000, investors: 12 },
@@ -11,8 +12,10 @@ export default function ProjectsSection() {
   const fmt = (n) => '₦' + n.toLocaleString('en-US');
 
   return (
-    <section style={{ background: 'var(--bg)' }}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 lg:py-20">
+    <section className="relative bg-grid-engineering" style={{ backgroundColor: 'var(--bg)' }}>
+      <SectionFloatingBg />
+      <div className="relative z-[2]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 lg:py-20">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -82,6 +85,7 @@ export default function ProjectsSection() {
             </Link>
           </div>
         </motion.div>
+      </div>
       </div>
     </section>
   );

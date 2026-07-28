@@ -6,6 +6,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { api } from '../../lib/api';
 import GearDecoration from '../common/GearDecoration';
+import SectionFloatingBg from '../common/SectionFloatingBg';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -90,13 +91,15 @@ export default function DepartmentsGrid({ content }) {
   }, []);
 
   return (
-    <section id="departments" className="relative" style={{ background: 'var(--bg)' }}>
-      <div className="absolute top-0 left-0 right-0 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(217,119,6,0.2), rgba(5,150,105,0.2), transparent)' }} />
-      <GearDecoration size="small" color="var(--gold)" className="absolute top-6 right-8 opacity-30" />
-      <GearDecoration size="medium" color="var(--emerald)" className="absolute bottom-8 left-6 opacity-25" />
-      <GearDecoration size="small" color="var(--gold)" className="absolute bottom-12 right-12 opacity-20" />
+    <section id="departments" className="relative bg-grid-engineering" style={{ backgroundColor: 'var(--bg)' }}>
+      <SectionFloatingBg />
+      <div className="relative z-[2]">
+        <div className="absolute top-0 left-0 right-0 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(217,119,6,0.2), rgba(5,150,105,0.2), transparent)' }} />
+        <GearDecoration size="small" color="var(--gold)" className="absolute top-6 right-8 opacity-30" />
+        <GearDecoration size="medium" color="var(--emerald)" className="absolute bottom-8 left-6 opacity-25" />
+        <GearDecoration size="small" color="var(--gold)" className="absolute bottom-12 right-12 opacity-20" />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 lg:py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 lg:py-20">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -139,6 +142,7 @@ export default function DepartmentsGrid({ content }) {
             );
           })}
         </div>
+      </div>
       </div>
     </section>
   );

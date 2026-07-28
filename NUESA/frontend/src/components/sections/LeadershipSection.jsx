@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import GearDecoration from '../common/GearDecoration';
+import SectionFloatingBg from '../common/SectionFloatingBg';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -113,10 +114,12 @@ export default function LeadershipSection() {
   }, []);
 
   return (
-    <section className="relative overflow-hidden" style={{ background: 'var(--bg-warm)' }}>
-      <div className="absolute top-0 left-0 right-0 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(5,150,105,0.15), transparent)' }} />
-      <GearDecoration size="small" color="var(--emerald)" className="absolute top-4 left-4 opacity-15" />
-      <GearDecoration size="medium" color="var(--gold)" className="absolute bottom-4 right-4 opacity-10" />
+    <section className="relative overflow-hidden bg-grid-engineering" style={{ backgroundColor: 'var(--bg-warm)' }}>
+      <SectionFloatingBg />
+      <div className="relative z-[2]">
+        <div className="absolute top-0 left-0 right-0 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(5,150,105,0.15), transparent)' }} />
+        <GearDecoration size="small" color="var(--emerald)" className="absolute top-4 left-4 opacity-15" />
+        <GearDecoration size="medium" color="var(--gold)" className="absolute bottom-4 right-4 opacity-10" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 lg:py-20">
         <motion.div
@@ -217,6 +220,7 @@ export default function LeadershipSection() {
             </div>
           </motion.div>
         </div>
+      </div>
       </div>
     </section>
   );
