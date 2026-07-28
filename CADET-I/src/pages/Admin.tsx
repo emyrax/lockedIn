@@ -258,7 +258,7 @@ export default function Admin() {
     }
     setPromotingId(officer.id);
     try {
-      const adminRef = doc(db, "admins", officer.id);
+      const adminRef = doc(db, "admins", officer.email?.toLowerCase());
       const existing = await getDoc(adminRef);
       if (existing.exists()) {
         setToast({ message: `${officer.serviceNumber} is already an admin`, type: "error" });
@@ -334,7 +334,7 @@ export default function Admin() {
     setAddAdminLoading(true);
     setAddAdminError("");
     try {
-      const userRef = doc(db, "admins", selectedAdminUser.id);
+      const userRef = doc(db, "admins", selectedAdminUser.email?.toLowerCase());
       const existing = await getDoc(userRef);
       if (existing.exists()) {
         setAddAdminError("User is already an admin");
