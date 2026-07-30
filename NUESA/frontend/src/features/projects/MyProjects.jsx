@@ -19,8 +19,10 @@ export default function MyProjects() {
         className="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4"
       >
         <div>
-          <h2 className="fw-bold mb-1" style={{ color: 'var(--green)' }}>My Projects</h2>
-          <p className="text-muted">Track your submitted projects</p>
+          <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
+            <h2 className="fw-bold mb-1" style={{ color: 'var(--green)' }}>My Projects</h2>
+            <p className="text-muted">Track your submitted projects</p>
+          </motion.div>
         </div>
         <Link to="/projects/submit" className="btn-nuesa btn-primary">
           <i className="fas fa-plus me-1" />New Project

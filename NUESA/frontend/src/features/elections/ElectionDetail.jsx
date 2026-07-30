@@ -120,7 +120,9 @@ export default function ElectionDetail() {
         )}
       </div>
 
-      <h3 className="font-heading font-bold text-lg mb-5" style={{ color: 'var(--emerald)' }}>Positions & Candidates</h3>
+      <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
+        <h3 className="font-heading font-bold text-lg mb-5" style={{ color: 'var(--emerald)' }}>Positions & Candidates</h3>
+      </motion.div>
 
       {(!election.positions || election.positions.length === 0) ? (
         <div className="empty-state">
@@ -131,7 +133,9 @@ export default function ElectionDetail() {
         <div ref={candidatesRef} className="space-y-5">
           {election.positions.map(pos => (
             <div key={pos.id} className="page-card p-5">
-              <h4 className="font-bold text-sm mb-1" style={{ color: 'var(--text)' }}>{pos.title}</h4>
+              <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
+                <h4 className="font-bold text-sm mb-1" style={{ color: 'var(--text)' }}>{pos.title}</h4>
+              </motion.div>
               {pos.description && <p className="text-xs mb-3" style={{ color: 'var(--text-muted)' }}>{pos.description}</p>}
 
               {(!pos.candidates || pos.candidates.length === 0) ? (

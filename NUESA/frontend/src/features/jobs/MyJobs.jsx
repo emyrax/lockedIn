@@ -37,7 +37,9 @@ export default function MyJobs() {
         transition={{ duration: 0.6 }}
         className="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4"
       >
-        <h2 className="fw-bold mb-0" style={{ color: 'var(--green)' }}>My Job Postings</h2>
+        <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
+          <h2 className="fw-bold mb-0" style={{ color: 'var(--green)' }}>My Job Postings</h2>
+        </motion.div>
         <Link to="/jobs/post" className="btn-nuesa btn-green btn-sm">+ Post New</Link>
       </motion.div>
 

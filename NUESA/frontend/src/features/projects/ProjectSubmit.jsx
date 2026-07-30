@@ -75,7 +75,9 @@ export default function ProjectSubmit() {
         <Link to="/projects" className="btn-nuesa btn-outline btn-sm mb-3">
           <i className="fas fa-arrow-left me-1" />Back to Projects
         </Link>
-        <h2 className="fw-bold mb-4" style={{ color: 'var(--orange)' }}>Submit Your Project</h2>
+        <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
+          <h2 className="fw-bold mb-4" style={{ color: 'var(--orange)' }}>Submit Your Project</h2>
+        </motion.div>
 
         <div className="d-flex gap-2 mb-4 flex-wrap">
           {[1, 2, 3, 4, 5].map(s => (
@@ -103,7 +105,9 @@ export default function ProjectSubmit() {
               >
                 {step === 1 && (
                   <>
-                    <h5 className="fw-bold mb-3" style={{ color: 'var(--green)' }}>Basic Information</h5>
+                    <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
+                      <h5 className="fw-bold mb-3" style={{ color: 'var(--green)' }}>Basic Information</h5>
+                    </motion.div>
                     <div className="mb-3">
                       <label className="form-label fw-semibold">Project Title *</label>
                       <input className="form-control form-control-lg" placeholder="e.g. Solar-Powered Irrigation System" value={form.title} onChange={update('title')} />
@@ -133,7 +137,9 @@ export default function ProjectSubmit() {
 
                 {step === 2 && (
                   <>
-                    <h5 className="fw-bold mb-3" style={{ color: 'var(--green)' }}>Project Details</h5>
+                    <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
+                      <h5 className="fw-bold mb-3" style={{ color: 'var(--green)' }}>Project Details</h5>
+                    </motion.div>
                     <div className="mb-3">
                       <label className="form-label fw-semibold">Description *</label>
                       <textarea className="form-control" rows={8} placeholder="Describe your project in detail — problem, solution, methodology, impact..." value={form.description} onChange={update('description')} />
@@ -157,7 +163,9 @@ export default function ProjectSubmit() {
 
                 {step === 3 && (
                   <>
-                    <h5 className="fw-bold mb-3" style={{ color: 'var(--green)' }}>Media & Links</h5>
+                    <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
+                      <h5 className="fw-bold mb-3" style={{ color: 'var(--green)' }}>Media & Links</h5>
+                    </motion.div>
                     <div className="mb-3">
                       <label className="form-label fw-semibold">Cover Image URL</label>
                       <input className="form-control" placeholder="https://example.com/image.jpg" value={form.cover_image} onChange={update('cover_image')} />
@@ -181,7 +189,9 @@ export default function ProjectSubmit() {
 
                 {step === 4 && (
                   <>
-                    <h5 className="fw-bold mb-3" style={{ color: 'var(--green)' }}>Team Members</h5>
+                    <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
+                      <h5 className="fw-bold mb-3" style={{ color: 'var(--green)' }}>Team Members</h5>
+                    </motion.div>
                     {form.team_members.map((member, i) => (
                       <div key={i} className="row g-2 mb-2 align-items-end">
                         <div className="col-md-5">
@@ -209,7 +219,9 @@ export default function ProjectSubmit() {
 
                 {step === 5 && (
                   <>
-                    <h5 className="fw-bold mb-3" style={{ color: 'var(--green)' }}>Review & Submit</h5>
+                    <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
+                      <h5 className="fw-bold mb-3" style={{ color: 'var(--green)' }}>Review & Submit</h5>
+                    </motion.div>
                     <div className="mb-3" style={{ color: 'var(--text-muted)' }}>
                       <p><strong style={{ color: 'var(--text)' }}>Title:</strong> {form.title || '—'}</p>
                       <p><strong style={{ color: 'var(--text)' }}>Tagline:</strong> {form.tagline || '—'}</p>

@@ -24,7 +24,9 @@ export default function VoteBooth() {
   if (!election || election.status !== 'voting') {
     return (
       <div className="page-container text-center">
-        <h2 style={{ color: 'var(--text)' }}>Voting is not open</h2>
+        <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
+          <h2 style={{ color: 'var(--text)' }}>Voting is not open</h2>
+        </motion.div>
         <Link to={`/elections/${id}`} className="btn-nuesa btn-outline mt-2">Back to election</Link>
       </div>
     );
@@ -49,7 +51,9 @@ export default function VoteBooth() {
           >
             <i className="fas fa-check-circle" style={{ fontSize: 64, color: 'var(--green)' }} />
           </motion.div>
-          <h2 style={{ color: 'var(--green)', marginTop: 12 }}>Vote Cast Successfully!</h2>
+          <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
+            <h2 style={{ color: 'var(--green)', marginTop: 12 }}>Vote Cast Successfully!</h2>
+          </motion.div>
           <p style={{ color: 'var(--text-muted)' }}>Your vote has been recorded anonymously.</p>
           <div className="page-card p-3 my-3">
             <p className="small text-muted mb-1">Your receipt (save this to verify):</p>
@@ -92,7 +96,9 @@ export default function VoteBooth() {
         <Link to={`/elections/${id}`} className="btn-nuesa btn-outline btn-sm mb-3">&larr; Back to Election</Link>
 
         <div style={{ marginBottom: 24 }}>
-          <h2 className="fw-bold mb-1">Cast Your Vote</h2>
+          <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
+            <h2 className="fw-bold mb-1">Cast Your Vote</h2>
+          </motion.div>
           <p className="text-muted small">{election.title}</p>
           <div className="d-flex gap-1 mt-2">
             {positions.map((_, i) => (
@@ -121,7 +127,9 @@ export default function VoteBooth() {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -40 }}
             >
-              <h3 className="fw-bold mb-1">{pos.title}</h3>
+              <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
+                <h3 className="fw-bold mb-1">{pos.title}</h3>
+              </motion.div>
               {pos.description && <p className="text-muted small mb-3">{pos.description}</p>}
 
               <div className="d-flex flex-column gap-2">

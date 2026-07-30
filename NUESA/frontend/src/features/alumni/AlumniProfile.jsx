@@ -48,10 +48,12 @@ export default function AlumniProfile() {
             ) : (p.full_name?.[0] || '?')}
           </motion.div>
           <div style={{ flex: 1 }}>
-            <h2 className="fw-bold mb-1">{p.full_name || 'Unknown'}</h2>
-            <p style={{ color: 'var(--text-muted)', margin: 0 }}>
-              {alumni.current_position}{alumni.current_position && alumni.current_company ? ' at ' : ''}{alumni.current_company}
-            </p>
+            <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
+              <h2 className="fw-bold mb-1">{p.full_name || 'Unknown'}</h2>
+              <p style={{ color: 'var(--text-muted)', margin: 0 }}>
+                {alumni.current_position}{alumni.current_position && alumni.current_company ? ' at ' : ''}{alumni.current_company}
+              </p>
+            </motion.div>
             <div className="d-flex flex-wrap gap-3 small mt-2" style={{ color: 'var(--text-muted)' }}>
               <span><i className="fas fa-graduation-cap me-1" style={{ color: 'var(--orange)' }} />Class of {alumni.graduation_year}</span>
               <span><i className="fas fa-briefcase me-1" style={{ color: 'var(--green)' }} />{alumni.industry}</span>
@@ -79,7 +81,9 @@ export default function AlumniProfile() {
             transition={{ delay: 0.2 }}
             className="page-card p-4 mb-4"
           >
-            <h5 className="fw-bold mb-2" style={{ color: 'var(--green)' }}>About</h5>
+            <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
+              <h5 className="fw-bold mb-2" style={{ color: 'var(--green)' }}>About</h5>
+            </motion.div>
             <p style={{ whiteSpace: 'pre-wrap' }}>{alumni.bio}</p>
           </motion.div>
         )}
@@ -112,7 +116,9 @@ export default function AlumniProfile() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
           >
-            <h5 className="fw-bold mb-3" style={{ color: 'var(--orange)' }}><i className="fas fa-briefcase me-2" />Job Postings</h5>
+            <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
+              <h5 className="fw-bold mb-3" style={{ color: 'var(--orange)' }}><i className="fas fa-briefcase me-2" />Job Postings</h5>
+            </motion.div>
             <div className="d-flex flex-column gap-2">
               {jobs.map((job, i) => (
                 <motion.div

@@ -37,8 +37,10 @@ export default function ApplyCandidate() {
     <div className="page-container" style={{ maxWidth: 600 }}>
       <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
         <Link to={`/elections/${id}`} className="btn-nuesa btn-outline btn-sm mb-3">&larr; Back to Election</Link>
-        <h2 className="fw-bold mb-1" style={{ color: 'var(--green)' }}>Apply as Candidate</h2>
-        {election && <p className="text-muted small mb-4">{election.title}</p>}
+        <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
+          <h2 className="fw-bold mb-1" style={{ color: 'var(--green)' }}>Apply as Candidate</h2>
+          {election && <p className="text-muted small mb-4">{election.title}</p>}
+        </motion.div>
 
         {election?.status !== 'nomination' ? (
           <p className="text-muted">This election is not accepting nominations right now.</p>

@@ -37,8 +37,10 @@ export default function PostJob() {
         transition={{ duration: 0.6 }}
       >
         <Link to="/jobs" className="btn-nuesa btn-outline btn-sm mb-3">&larr; All Jobs</Link>
-        <h2 className="fw-bold mb-1" style={{ color: 'var(--green)' }}>Post a Job</h2>
-        <p className="text-muted small mb-4">Share opportunities with the NUESA community. Postings require moderation.</p>
+        <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
+          <h2 className="fw-bold mb-1" style={{ color: 'var(--green)' }}>Post a Job</h2>
+          <p className="text-muted small mb-4">Share opportunities with the NUESA community. Postings require moderation.</p>
+        </motion.div>
 
         <div className="page-card p-4">
           <form onSubmit={handleSubmit}>

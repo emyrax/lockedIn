@@ -59,10 +59,12 @@ export default function MyAlumniProfile() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
       >
-        <h2 className="fw-bold mb-1" style={{ color: 'var(--green)' }}>{profile?.id ? 'Edit' : 'Create'} Alumni Profile</h2>
-        <p className="text-muted small mb-4">
-          {profile?.id ? 'Update your alumni information' : 'Fill in your details to join the alumni directory'}
-        </p>
+        <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
+          <h2 className="fw-bold mb-1" style={{ color: 'var(--green)' }}>{profile?.id ? 'Edit' : 'Create'} Alumni Profile</h2>
+          <p className="text-muted small mb-4">
+            {profile?.id ? 'Update your alumni information' : 'Fill in your details to join the alumni directory'}
+          </p>
+        </motion.div>
 
         <div className="page-card p-4">
           <form onSubmit={handleSubmit}>
