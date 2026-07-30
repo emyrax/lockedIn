@@ -1,6 +1,6 @@
 import React, { useRef, useMemo } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { Float, Sphere, MeshDistortMaterial } from '@react-three/drei';
+import { Float, MeshDistortMaterial } from '@react-three/drei';
 import * as THREE from 'three';
 
 function ParticleField({ count = 120 }) {
@@ -32,10 +32,24 @@ function ParticleField({ count = 120 }) {
   );
 }
 
-function CenterGlobe() {
+function HelmetModel() {
+  const helmetGeometry = useMemo(() => {
+    const profile = [
+      [0, 2.1], [0.35, 2.0], [0.7, 1.8], [1.0, 1.5],
+      [1.2, 1.1], [1.3, 0.7], [1.28, 0.35], [1.2, 0.15],
+      [1.35, 0.05], [1.35, -0.05], [1.05, -0.12],
+      [0.75, -0.2], [0.65, -0.45], [0.7, -0.7],
+      [0.85, -0.95], [0.9, -1.2], [0.85, -1.45], [0.75, -1.7],
+    ];
+    return new THREE.LatheGeometry(
+      profile.map(p => new THREE.Vector2(p[0], p[1])),
+      64
+    );
+  }, []);
+
   return (
     <Float speed={2} rotationIntensity={1} floatIntensity={2}>
-      <Sphere args={[1.5, 64, 64]}>
+      <mesh geometry={helmetGeometry}>
         <MeshDistortMaterial
           color="#f97316"
           distort={0.5}
@@ -43,7 +57,7 @@ function CenterGlobe() {
           roughness={0.15}
           metalness={0.1}
         />
-      </Sphere>
+      </mesh>
     </Float>
   );
 }
@@ -82,7 +96,7 @@ export default function HeroCanvas() {
         <ambientLight intensity={0.8} />
         <directionalLight position={[5, 5, 5]} intensity={0.5} />
         <ParticleField />
-        <CenterGlobe />
+        <HelmetModel />
         <ConnectionLines />
       </Canvas>
     </div>

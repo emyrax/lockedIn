@@ -3,8 +3,6 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../stores/auth';
 import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
-import GearDecoration from '../../components/common/GearDecoration';
-import EngineeringToolReveal from '../../components/common/EngineeringToolReveal';
 
 export default function Login() {
   const { login, verify2fa } = useAuth();
@@ -67,28 +65,25 @@ export default function Login() {
   };
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center overflow-hidden" style={{ background: 'linear-gradient(135deg, #030712 0%, #0F172A 50%, #022c22 100%)' }}>
-      <div className="absolute inset-0 opacity-[0.04]" style={{
-        backgroundImage: 'radial-gradient(circle at 20% 30%, #059669 1px, transparent 1px), radial-gradient(circle at 80% 70%, #D97706 1px, transparent 1px)',
-        backgroundSize: '40px 40px, 32px 32px',
-      }} />
-      <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(ellipse at 25% 20%, rgba(5,150,105,0.06) 0%, transparent 60%), radial-gradient(ellipse at 75% 80%, rgba(217,119,6,0.05) 0%, transparent 50%)' }} />
-
-      <GearDecoration size="xxl" color="var(--emerald)" className="absolute -top-12 -left-12 opacity-10" />
-      <GearDecoration size="xl" color="var(--gold)" className="absolute -bottom-8 -right-8 opacity-10" />
-      <GearDecoration size="large" color="var(--emerald)" className="absolute top-1/3 right-4 opacity-8" />
-      <GearDecoration size="medium" color="var(--gold)" className="absolute bottom-1/4 left-6 opacity-12" />
-      <GearDecoration size="small" color="var(--emerald)" className="absolute top-1/4 left-1/3 opacity-15" />
-
-      <EngineeringToolReveal index={2} style={{ top: '10%', right: '5%' }} />
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90">
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute inset-0 opacity-[0.03]" style={{
+          backgroundImage: 'radial-gradient(circle at 30% 40%, #059669 2px, transparent 2px), radial-gradient(circle at 70% 60%, #D97706 1px, transparent 1px)',
+          backgroundSize: '60px 60px, 40px 40px',
+        }} />
+        <div className="absolute inset-0" style={{
+          backgroundImage: 'radial-gradient(ellipse at 50% 50%, rgba(5,150,105,0.08) 0%, transparent 60%)',
+        }} />
+      </div>
 
       <motion.div
-        initial={{ opacity: 0, y: 40, scale: 0.97 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-        className="w-full max-w-md mx-4"
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+        className="w-full max-w-md mx-4 relative"
       >
-        <div className="glass-card-dark p-6 lg:p-8 text-center relative overflow-hidden">
+        <div className="glass-card-dark p-6 lg:p-8 text-center relative overflow-hidden group transition-all duration-300"
+          style={{ boxShadow: '0 24px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(5,150,105,0.08), 0 0 40px rgba(5,150,105,0.05)' }}>
           <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: 'linear-gradient(90deg, transparent, var(--gold), var(--emerald), transparent)' }} />
 
           <motion.div
@@ -118,22 +113,22 @@ export default function Login() {
             >
               <div>
                 <label className="auth-label">Matric Number</label>
-                <div className="relative">
-                  <i className="fas fa-id-card absolute left-3 top-1/2 -translate-y-1/2 text-xs" style={{ color: 'rgba(255,255,255,0.25)' }} />
+                <div className="relative group/input">
+                  <i className="fas fa-id-card absolute left-3 top-1/2 -translate-y-1/2 text-xs transition-colors duration-300" style={{ color: 'rgba(255,255,255,0.25)' }} />
                   <input className="auth-input" placeholder="e.g. 2024/123456" value={matric} onChange={e => setMatric(e.target.value)} required />
                 </div>
               </div>
               <div>
                 <label className="auth-label">Password</label>
-                <div className="relative">
-                  <i className="fas fa-lock absolute left-3 top-1/2 -translate-y-1/2 text-xs" style={{ color: 'rgba(255,255,255,0.25)' }} />
+                <div className="relative group/input">
+                  <i className="fas fa-lock absolute left-3 top-1/2 -translate-y-1/2 text-xs transition-colors duration-300" style={{ color: 'rgba(255,255,255,0.25)' }} />
                   <input type="password" className="auth-input" value={password} onChange={e => setPassword(e.target.value)} required />
                 </div>
               </div>
 
               <motion.button
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.99 }}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 className="btn-nuesa w-full justify-center text-sm !py-3 font-semibold"
                 type="submit" disabled={loading}
                 style={{ background: 'linear-gradient(135deg, var(--gold), #f59e0b)', color: 'white', boxShadow: '0 4px 16px rgba(217,119,6,0.25)' }}
@@ -192,8 +187,8 @@ export default function Login() {
               </div>
 
               <motion.button
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.99 }}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 className="btn-nuesa w-full justify-center text-sm !py-3 font-semibold"
                 type="submit" disabled={loading || otp.join('').length !== 6}
                 style={{ background: 'linear-gradient(135deg, var(--emerald), #10B981)', color: 'white', boxShadow: '0 4px 16px rgba(5,150,105,0.25)' }}

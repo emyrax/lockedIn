@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState, useRef } from "react";
 import { onAuthStateChanged, signOut, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import type { User } from "firebase/auth";
-import { collection, doc, getDoc, query, where, onSnapshot, setDoc, serverTimestamp } from "firebase/firestore";
+import { collection, doc, getDoc, query, where, onSnapshot } from "firebase/firestore";
 import { auth, db } from "../config/firebase";
 import type { OfficerUser } from "../types";
 
@@ -65,29 +65,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         unsubAdminRef.current = onSnapshot(adminQuery, (snap) => {
           if (!snap.empty) {
             const data = snap.docs[0].data();
-            const role = String(data.role || data.Role || "").toLowerCase();
             setIsAdmin(true);
-            setAdminRole(role);
-            setIsMediaAdmin(role.includes("media"));
+            setAdminRole(data.role || null);
+            setIsMediaAdmin(data.role === "media-admin");
           } else {
-            if (u.email === "ekwuemesat@gmail.com") {
-              setIsAdmin(true);
-              setAdminRole("super-admin");
-              setIsMediaAdmin(false);
-              setDoc(doc(db, "admins", u.uid), {
-                email: "ekwuemesat@gmail.com",
-                role: "super-admin",
-                createdAt: serverTimestamp(),
-              }).catch(err => console.error("Failed to create admin doc:", err));
-            } else {
-              setIsAdmin(false);
-              setAdminRole(null);
-              setIsMediaAdmin(false);
-            }
+            setIsAdmin(false);
+            setAdminRole(null);
+            setIsMediaAdmin(false);
           }
           setProfileLoading(false);
         }, (err) => {
-          console.error("Admin listener error:", err);
+          console.warn("Admin access check failed:", err);
+          setIsAdmin(false);
+          setAdminRole(null);
+          setIsMediaAdmin(false);
           setProfileLoading(false);
         });
         const snap = await getDoc(doc(db, "users", u.uid));
