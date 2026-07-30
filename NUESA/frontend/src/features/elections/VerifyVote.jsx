@@ -30,8 +30,10 @@ export default function VerifyVote() {
     <div className="page-container" style={{ maxWidth: 500 }}>
       <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
         <Link to={`/elections/${id}`} className="btn-nuesa btn-outline btn-sm mb-3">&larr; Back to Election</Link>
-        <h2 className="fw-bold mb-1" style={{ color: 'var(--green)' }}>Verify Your Vote</h2>
-        <p className="text-muted small mb-4">Enter your vote receipt hash to confirm it was counted</p>
+        <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
+          <h2 className="fw-bold mb-1" style={{ color: 'var(--green)' }}>Verify Your Vote</h2>
+          <p className="text-muted small mb-4">Enter your vote receipt hash to confirm it was counted</p>
+        </motion.div>
 
         <form onSubmit={handleVerify} className="d-flex gap-2 mb-3">
           <input value={hash} onChange={e => setHash(e.target.value)} placeholder="Paste your receipt hash..." className="form-control" />

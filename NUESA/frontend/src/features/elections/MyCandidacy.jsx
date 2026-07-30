@@ -21,7 +21,9 @@ export default function MyCandidacy() {
   return (
     <div className="page-container" style={{ maxWidth: 700 }}>
       <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-        <h2 className="fw-bold mb-4" style={{ color: 'var(--green)' }}>My Candidacy Applications</h2>
+        <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
+          <h2 className="fw-bold mb-4" style={{ color: 'var(--green)' }}>My Candidacy Applications</h2>
+        </motion.div>
 
         {isLoading ? (
           <div className="loading-state"><div className="spinner-border" style={{ color: 'var(--green)' }} /></div>
