@@ -126,17 +126,17 @@
     background-image:
       linear-gradient(rgba(5,150,105,0.04) 1px, transparent 1px),
       linear-gradient(90deg, rgba(5,150,105,0.04) 1px, transparent 1px);
-    background-size: 40px 40px;
+    background-size: 24px 24px;
   }
   .bg-grid-light {
     background-image:
       linear-gradient(rgba(5,150,105,0.03) 1px, transparent 1px),
       linear-gradient(90deg, rgba(5,150,105,0.03) 1px, transparent 1px);
-    background-size: 40px 40px;
+    background-size: 24px 24px;
   }
   .bg-dots {
     background-image: radial-gradient(circle, rgba(5,150,105,0.08) 1px, transparent 1px);
-    background-size: 24px 24px;
+    background-size: 16px 16px;
   }
 
   .bg-grid-engineering {
@@ -145,7 +145,7 @@
       linear-gradient(rgba(234,88,12,0.12) 1.5px, transparent 1.5px),
       linear-gradient(90deg, rgba(5,150,105,0.04) 0.5px, transparent 0.5px),
       linear-gradient(rgba(234,88,12,0.04) 0.5px, transparent 0.5px);
-    background-size: 100px 100px, 100px 100px, 25px 25px, 25px 25px;
+    background-size: 60px 60px, 60px 60px, 15px 15px, 15px 15px;
   }
 
   .form-input, .form-select, .form-textarea {
